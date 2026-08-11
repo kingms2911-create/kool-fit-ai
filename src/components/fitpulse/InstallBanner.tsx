@@ -6,6 +6,23 @@ type InstallPromptEvent = Event & { prompt: () => Promise<void>; userChoice: Pro
 
 const DISMISS_KEY = "koolfit_install_dismissed";
 
+/** Service workers must never run in dev or Lovable preview contexts. */
+function swAllowed() {
+  if (!import.meta.env.PROD) return false;
+  if (window.top !== window.self) return false;
+  if (new URL(window.location.href).searchParams.get("sw") === "off") return false;
+  const h = window.location.hostname;
+  if (h.startsWith("id-preview--") || h.startsWith("preview--")) return false;
+  return !(
+    h === "lovableproject.com" ||
+    h.endsWith(".lovableproject.com") ||
+    h === "lovableproject-dev.com" ||
+    h.endsWith(".lovableproject-dev.com") ||
+    h === "beta.lovable.dev" ||
+    h.endsWith(".beta.lovable.dev")
+  );
+}
+
 /**
  * Registers the auto-updating service worker and shows a one-time
  * "Install Kool Fit App" banner on supported mobile browsers.
