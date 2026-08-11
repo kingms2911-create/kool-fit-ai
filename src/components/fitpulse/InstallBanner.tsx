@@ -18,24 +18,34 @@ export function InstallBanner() {
     if (typeof window === "undefined") return;
 
     if ("serviceWorker" in navigator) {
-      void navigator.serviceWorker.register("/sw.js").then((reg) => {
-        // Poll for new deployments and activate them without a manual reinstall.
-        setInterval(() => void reg.update(), 60_000);
-        reg.addEventListener("updatefound", () => {
-          const sw = reg.installing;
-          sw?.addEventListener("statechange", () => {
-            if (sw.state === "installed" && navigator.serviceWorker.controller) sw.postMessage("SKIP_WAITING");
+      if (swAllowed()) {
+        void navigator.serviceWorker.register("/sw.js").then((reg) => {
+          // Poll for new deployments and activate them without a manual reinstall.
+          setInterval(() => void reg.update(), 60_000);
+          reg.addEventListener("updatefound", () => {
+            const sw = reg.installing;
+            sw?.addEventListener("statechange", () => {
+              if (sw.state === "installed" && navigator.serviceWorker.controller) sw.postMessage("SKIP_WAITING");
+            });
           });
-        });
-      }).catch(() => undefined);
+        }).catch(() => undefined);
 
-      let reloaded = false;
-      navigator.serviceWorker.addEventListener("controllerchange", () => {
-        if (reloaded) return;
-        reloaded = true;
-        window.location.reload();
-      });
+        let reloaded = false;
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          if (reloaded) return;
+          reloaded = true;
+          window.location.reload();
+        });
+      } else {
+        // Never keep a service worker alive in dev / Lovable preview / ?sw=off.
+        void navigator.serviceWorker.getRegistrations().then((regs) =>
+          regs
+            .filter((r) => (r.active?.scriptURL ?? r.installing?.scriptURL ?? "").endsWith("/sw.js"))
+            .forEach((r) => void r.unregister()),
+        );
+      }
     }
+
 
     const dismissed = window.localStorage.getItem(DISMISS_KEY) === "1";
     const onPrompt = (e: Event) => {
