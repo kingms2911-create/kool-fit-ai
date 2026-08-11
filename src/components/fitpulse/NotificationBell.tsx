@@ -101,7 +101,7 @@ export function NotificationBell() {
                         void navigate({
                           to: n.href,
                           ...(n.refId ? { search: { focus: n.refId } } : {}),
-                        });
+                        } as never);
                       }
                     }}
                     className={`flex w-full items-start gap-2 rounded-xl border p-3 text-left transition-colors hover:bg-secondary ${

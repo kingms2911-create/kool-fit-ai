@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { CheckCircle2, Circle, ClipboardList, X, Utensils, Dumbbell, Pencil } from "lucide-react";
+import { useEffect, useState } from "react";
+import { CheckCircle2, Circle, ClipboardList, X, Utensils, Dumbbell, Pencil, HeartPulse } from "lucide-react";
 import { AppShell, GlassCard } from "@/components/fitpulse/AppShell";
 import { PlanEditorModal } from "@/components/fitpulse/PlanEditorModal";
 import { Button } from "@/components/ui/button";
@@ -28,21 +28,44 @@ export const Route = createFileRoute("/trainer-portal")({
       },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    focus: typeof search['focus'] === "string" ? (search['focus'] as string) : undefined,
+  }),
   component: TrainerPortal,
 });
 
 function TrainerPortal() {
-  const { state, currentUser, toggleAttendance, decideRequest, updateRequestPlan } = useStore();
+  const { state, currentUser, toggleAttendance, decideRequest, updateRequestPlan, resolveHealthIssue } =
+    useStore();
+  const { focus } = Route.useSearch();
   const [open, setOpen] = useState<PlanRequest | null>(null);
   const [editing, setEditing] = useState(false);
   // keep the open request in sync with edits saved to the store
   const req = open ? (state.requests.find((r) => r.id === open.id) ?? open) : null;
 
-  const members = state.users.filter((u) => u.role === "member" && u.trainerId === currentUser?.id);
+  // Members explicitly assigned to this trainer, plus every other member of the gym
+  // so nothing gets stranded when a member has no trainer assigned yet.
+  const gymMembers = state.users.filter((u) => u.role === "member" && u.gymId === currentUser?.gymId);
+  const members = gymMembers.filter((u) => !u.trainerId || u.trainerId === currentUser?.id);
   const pending = state.requests.filter(
-    (r) => r.status === "pending" && members.some((m) => m.id === r.memberId),
+    (r) => r.status === "pending" && gymMembers.some((m) => m.id === r.memberId),
   );
+  const issues = (state.healthIssues ?? [])
+    .filter((h) => h.gymId === currentUser?.gymId && !h.resolved)
+    .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
   const nameOf = (id: string) => state.users.find((u) => u.id === id)?.name ?? "Member";
+
+  // Deep-link from a notification card: open the request or scroll to the issue.
+  useEffect(() => {
+    if (!focus) return;
+    const req = state.requests.find((r) => r.id === focus);
+    if (req) {
+      setOpen(req);
+      return;
+    }
+    document.getElementById(`issue-${focus}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focus]);
 
   return (
     <AppShell
@@ -101,6 +124,39 @@ function TrainerPortal() {
             ))}
             {pending.length === 0 ? (
               <p className="text-sm text-muted-foreground">Queue is clear. Nice work.</p>
+            ) : null}
+          </div>
+        </GlassCard>
+
+        <GlassCard className="lg:col-span-2">
+          <div className="flex items-center gap-2">
+            <HeartPulse className="size-5 text-primary" />
+            <h2 className="text-lg font-semibold">Member health issues</h2>
+            <span className="ml-auto rounded-full bg-primary/15 px-2.5 py-1 text-xs font-medium text-primary">
+              {issues.length} open
+            </span>
+          </div>
+          <div className="mt-4 space-y-3">
+            {issues.map((h) => (
+              <div
+                key={h.id}
+                id={`issue-${h.id}`}
+                className={`rounded-xl border p-3 ${
+                  focus === h.id ? "border-primary/60 bg-secondary" : "border-border/60 bg-secondary/40"
+                }`}
+              >
+                <p className="text-sm font-medium">{nameOf(h.memberId)}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{h.issue}</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  {new Date(h.at).toLocaleString("en-IN")}
+                </p>
+                <Button size="sm" variant="outline" className="mt-3 border-border/70 bg-secondary" onClick={() => resolveHealthIssue(h.id)}>
+                  <CheckCircle2 className="size-4" /> Mark handled
+                </Button>
+              </div>
+            ))}
+            {issues.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No open health issues.</p>
             ) : null}
           </div>
         </GlassCard>
