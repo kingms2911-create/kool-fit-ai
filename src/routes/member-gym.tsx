@@ -85,7 +85,7 @@ function MemberGymPage() {
 
 function ContactButton({ icon, label, href }: { icon: React.ReactNode; label: string; href: string }) {
   return (
-    <Button asChild variant="outline" className="h-11 w-full border-border/70 bg-white/5 text-xs">
+    <Button asChild variant="outline" className="h-11 w-full border-border/70 bg-secondary text-xs">
       <a href={href} target="_blank" rel="noreferrer">
         {icon} {label}
       </a>

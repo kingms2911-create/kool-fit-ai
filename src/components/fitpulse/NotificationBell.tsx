@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Bell, BellRing, X, Check } from "lucide-react";
+import { Bell, BellRing, X, Check, ChevronRight } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/lib/fitpulse-store";
 import { enablePush, pushNotify, pushStatus } from "@/lib/push";
 
 /** Header bell with unread badge + in-app notification centre sheet. */
 export function NotificationBell() {
-  const { state, currentUser, markNotificationsRead } = useStore();
+  const { state, currentUser, markNotificationsRead, markNotificationRead } = useStore();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [permission, setPermission] = useState<string>("default");
   const lastCount = useRef<number | null>(null);
@@ -36,10 +38,7 @@ export function NotificationBell() {
       <button
         type="button"
         aria-label={`Notifications${unread ? `, ${unread} unread` : ""}`}
-        onClick={() => {
-          setOpen(true);
-          markNotificationsRead();
-        }}
+        onClick={() => setOpen(true)}
         className="relative grid size-9 shrink-0 place-items-center rounded-xl border border-border/70 bg-white/5 text-foreground transition-colors hover:bg-white/10"
       >
         {unread ? <BellRing className="size-4 text-primary" /> : <Bell className="size-4" />}
@@ -58,7 +57,15 @@ export function NotificationBell() {
           >
             <div className="flex items-center gap-2">
               <h2 className="text-lg font-semibold">Notifications</h2>
-              <Button variant="ghost" size="sm" className="ml-auto" onClick={() => setOpen(false)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-auto text-xs"
+                onClick={() => markNotificationsRead()}
+              >
+                Mark all read
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
                 <X className="size-4" />
               </Button>
             </div>
@@ -79,18 +86,37 @@ export function NotificationBell() {
 
             <div className="mt-4 space-y-2">
               {mine.length === 0 ? (
-                <p className="rounded-xl border border-border/60 bg-white/[0.03] p-3 text-sm text-muted-foreground">
+                <p className="rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm text-muted-foreground">
                   Nothing yet. Approvals, renewals and announcements land here.
                 </p>
               ) : (
                 mine.map((n) => (
-                  <div key={n.id} className="rounded-xl border border-border/60 bg-white/[0.03] p-3">
+                  <button
+                    key={n.id}
+                    type="button"
+                    onClick={() => {
+                      markNotificationRead(n.id);
+                      setOpen(false);
+                      if (n.href) {
+                        void navigate({
+                          to: n.href,
+                          ...(n.refId ? { search: { focus: n.refId } } : {}),
+                        });
+                      }
+                    }}
+                    className={`flex w-full items-start gap-2 rounded-xl border p-3 text-left transition-colors hover:bg-secondary ${
+                      n.read ? "border-border/60 bg-secondary/40" : "border-primary/40 bg-secondary"
+                    }`}
+                  >
+                    <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium">{n.title}</p>
                     <p className="mt-0.5 text-xs text-muted-foreground">{n.body}</p>
                     <p className="mt-1 text-[11px] text-muted-foreground">
                       {new Date(n.at).toLocaleString("en-IN")}
                     </p>
-                  </div>
+                    </div>
+                    {n.href ? <ChevronRight className="mt-1 size-4 shrink-0 text-muted-foreground" /> : null}
+                  </button>
                 ))
               )}
             </div>
