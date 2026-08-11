@@ -6,6 +6,23 @@ type InstallPromptEvent = Event & { prompt: () => Promise<void>; userChoice: Pro
 
 const DISMISS_KEY = "koolfit_install_dismissed";
 
+/** Service workers must never run in dev or Lovable preview contexts. */
+function swAllowed() {
+  if (!import.meta.env.PROD) return false;
+  if (window.top !== window.self) return false;
+  if (new URL(window.location.href).searchParams.get("sw") === "off") return false;
+  const h = window.location.hostname;
+  if (h.startsWith("id-preview--") || h.startsWith("preview--")) return false;
+  return !(
+    h === "lovableproject.com" ||
+    h.endsWith(".lovableproject.com") ||
+    h === "lovableproject-dev.com" ||
+    h.endsWith(".lovableproject-dev.com") ||
+    h === "beta.lovable.dev" ||
+    h.endsWith(".beta.lovable.dev")
+  );
+}
+
 /**
  * Registers the auto-updating service worker and shows a one-time
  * "Install Kool Fit App" banner on supported mobile browsers.
@@ -18,24 +35,34 @@ export function InstallBanner() {
     if (typeof window === "undefined") return;
 
     if ("serviceWorker" in navigator) {
-      void navigator.serviceWorker.register("/sw.js").then((reg) => {
-        // Poll for new deployments and activate them without a manual reinstall.
-        setInterval(() => void reg.update(), 60_000);
-        reg.addEventListener("updatefound", () => {
-          const sw = reg.installing;
-          sw?.addEventListener("statechange", () => {
-            if (sw.state === "installed" && navigator.serviceWorker.controller) sw.postMessage("SKIP_WAITING");
+      if (swAllowed()) {
+        void navigator.serviceWorker.register("/sw.js").then((reg) => {
+          // Poll for new deployments and activate them without a manual reinstall.
+          setInterval(() => void reg.update(), 60_000);
+          reg.addEventListener("updatefound", () => {
+            const sw = reg.installing;
+            sw?.addEventListener("statechange", () => {
+              if (sw.state === "installed" && navigator.serviceWorker.controller) sw.postMessage("SKIP_WAITING");
+            });
           });
-        });
-      }).catch(() => undefined);
+        }).catch(() => undefined);
 
-      let reloaded = false;
-      navigator.serviceWorker.addEventListener("controllerchange", () => {
-        if (reloaded) return;
-        reloaded = true;
-        window.location.reload();
-      });
+        let reloaded = false;
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          if (reloaded) return;
+          reloaded = true;
+          window.location.reload();
+        });
+      } else {
+        // Never keep a service worker alive in dev / Lovable preview / ?sw=off.
+        void navigator.serviceWorker.getRegistrations().then((regs) =>
+          regs
+            .filter((r) => (r.active?.scriptURL ?? r.installing?.scriptURL ?? "").endsWith("/sw.js"))
+            .forEach((r) => void r.unregister()),
+        );
+      }
     }
+
 
     const dismissed = window.localStorage.getItem(DISMISS_KEY) === "1";
     const onPrompt = (e: Event) => {
