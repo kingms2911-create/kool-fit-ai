@@ -246,6 +246,20 @@ export type AppNotification = {
   body: string;
   at: string;
   read: boolean;
+  /** in-app destination opened when the card is clicked */
+  href?: string;
+  /** id of the related plan request / health issue */
+  refId?: string;
+};
+
+/** Physical issue or soreness reported by a member to their trainer. */
+export type HealthIssue = {
+  id: string;
+  memberId: string;
+  gymId: string;
+  issue: string;
+  at: string;
+  resolved: boolean;
 };
 
 export type ChecklistItem = { id: string; label: string; detail: string; done: boolean };
@@ -260,6 +274,8 @@ type State = {
   leads: Lead[];
   checkins: CheckIn[];
   notifications: AppNotification[];
+  /** physical issues reported by members */
+  healthIssues: HealthIssue[];
   /** affiliate store catalogue — global + per-gym products */
   products: Product[];
   /** read-only guest preview mode */
@@ -376,6 +392,7 @@ function seed(): State {
     notifications: [
       { id: "n1", userId: "u_member", title: "Welcome to Kool Fit AI", body: "Your membership is active. Check today's workout in the Today tab.", at: iso(today), read: false },
     ],
+    healthIssues: [],
     products: SEED_PRODUCTS(gymId),
     guest: false,
 
@@ -383,12 +400,27 @@ function seed(): State {
 }
 
 /** Append in-app notifications for one or more users. */
-function pushNote(s: State, userIds: string[], title: string, body: string): State {
+function pushNote(
+  s: State,
+  userIds: string[],
+  title: string,
+  body: string,
+  meta?: { href?: string; refId?: string },
+): State {
   const at = iso(new Date());
   return {
     ...s,
     notifications: [
-      ...userIds.map((userId) => ({ id: `n_${uid()}`, userId, title, body, at, read: false })),
+      ...userIds.map((userId) => ({
+        id: `n_${uid()}`,
+        userId,
+        title,
+        body,
+        at,
+        read: false,
+        ...(meta?.href ? { href: meta.href } : {}),
+        ...(meta?.refId ? { refId: meta.refId } : {}),
+      })),
       ...(s.notifications ?? []),
     ],
   };
@@ -450,6 +482,8 @@ type Ctx = {
   visibleProducts: Product[];
   /** member reports a discomfort — alerts the gym owner & trainer */
   reportHealthIssue: (issue: string) => { ok: boolean; error?: string };
+  markNotificationRead: (id: string) => void;
+  resolveHealthIssue: (id: string) => void;
 
 };
 
@@ -482,6 +516,7 @@ function migrate(s: State): State {
     leads: s.leads ?? [],
     checkins: s.checkins ?? [],
     notifications: s.notifications ?? [],
+    healthIssues: s.healthIssues ?? [],
     products: s.products?.length ? s.products : SEED_PRODUCTS(s.gyms[0]?.id ?? "gym_pulse"),
 
     guest: false,
@@ -746,7 +781,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const users = prefs
         ? s.users.map((u) => (u.id === me.id ? { ...u, calorieTarget: prefs.calorieTarget } : u))
         : s.users;
-      return pushNote({ ...s, users, requests: [req, ...s.requests] }, staff, "New Plan Request", `${me.name}: ${goal}`);
+      return pushNote(
+        { ...s, users, requests: [req, ...s.requests] },
+        staff,
+        "New Plan Request",
+        `${me.name}: ${goal}`,
+        { href: "/trainer-portal", refId: req.id },
+      );
 
     });
   }, []);
@@ -1031,14 +1072,42 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         res = { ok: false, error: "No trainer or owner is linked to your gym yet" };
         return s;
       }
-      return pushNote(s, staff, "Member health issue", `${me.name}: ${issue.trim()}`);
+      const record: HealthIssue = {
+        id: `h_${uid()}`,
+        memberId: me.id,
+        gymId: me.gymId,
+        issue: issue.trim(),
+        at: iso(new Date()),
+        resolved: false,
+      };
+      return pushNote(
+        { ...s, healthIssues: [record, ...(s.healthIssues ?? [])] },
+        staff,
+        "Member health issue",
+        `${me.name}: ${issue.trim()}`,
+        { href: "/trainer-portal", refId: record.id },
+      );
     });
     return res;
   }, []);
 
+  const markNotificationRead = useCallback((id: string) => {
+    setState((s) => ({
+      ...s,
+      notifications: s.notifications.map((n) => (n.id === id ? { ...n, read: true } : n)),
+    }));
+  }, []);
+
+  const resolveHealthIssue = useCallback((id: string) => {
+    setState((s) => ({
+      ...s,
+      healthIssues: (s.healthIssues ?? []).map((h) => (h.id === id ? { ...h, resolved: true } : h)),
+    }));
+  }, []);
+
   const value = useMemo<Ctx>(
-    () => ({ state, currentUser, currentGym, signIn, signOut, registerGym, joinAsMember, confirmOnlinePayment, approveMemberPayment, createMember, createTrainer, resetPassword, toggleAttendance, decideRequest, requestPlan, updateRequestPlan, markNotificationsRead, sendAnnouncement, toggleChecklist, updatePricing, purchaseMembership, demoSignIn, guestSignIn, requestRenewal, approveRenewal, setMemberActive, assignPlan, addLead, setLeadStatus, checkInMember, updateGymContacts, setGymActive, broadcastPlatform, setCalorieTarget, logFood, removeFoodLog, addProduct, removeProduct, visibleProducts, reportHealthIssue }),
-    [state, currentUser, currentGym, signIn, signOut, registerGym, joinAsMember, confirmOnlinePayment, approveMemberPayment, createMember, createTrainer, resetPassword, toggleAttendance, decideRequest, requestPlan, updateRequestPlan, markNotificationsRead, sendAnnouncement, toggleChecklist, updatePricing, purchaseMembership, demoSignIn, guestSignIn, requestRenewal, approveRenewal, setMemberActive, assignPlan, addLead, setLeadStatus, checkInMember, updateGymContacts, setGymActive, broadcastPlatform, setCalorieTarget, logFood, removeFoodLog, addProduct, removeProduct, visibleProducts, reportHealthIssue],
+    () => ({ state, currentUser, currentGym, signIn, signOut, registerGym, joinAsMember, confirmOnlinePayment, approveMemberPayment, createMember, createTrainer, resetPassword, toggleAttendance, decideRequest, requestPlan, updateRequestPlan, markNotificationsRead, sendAnnouncement, toggleChecklist, updatePricing, purchaseMembership, demoSignIn, guestSignIn, requestRenewal, approveRenewal, setMemberActive, assignPlan, addLead, setLeadStatus, checkInMember, updateGymContacts, setGymActive, broadcastPlatform, setCalorieTarget, logFood, removeFoodLog, addProduct, removeProduct, visibleProducts, reportHealthIssue, markNotificationRead, resolveHealthIssue }),
+    [state, currentUser, currentGym, signIn, signOut, registerGym, joinAsMember, confirmOnlinePayment, approveMemberPayment, createMember, createTrainer, resetPassword, toggleAttendance, decideRequest, requestPlan, updateRequestPlan, markNotificationsRead, sendAnnouncement, toggleChecklist, updatePricing, purchaseMembership, demoSignIn, guestSignIn, requestRenewal, approveRenewal, setMemberActive, assignPlan, addLead, setLeadStatus, checkInMember, updateGymContacts, setGymActive, broadcastPlatform, setCalorieTarget, logFood, removeFoodLog, addProduct, removeProduct, visibleProducts, reportHealthIssue, markNotificationRead, resolveHealthIssue],
   );
 
 
