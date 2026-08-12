@@ -4,7 +4,7 @@ import { Dumbbell, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useStore, roleHome, SUPER_ADMIN_EMAIL, SUPER_ADMIN_PASSWORD } from "@/lib/fitpulse-store";
+import { useStore, roleHome } from "@/lib/fitpulse-store";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
