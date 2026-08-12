@@ -79,7 +79,7 @@ function MemberHealthPage() {
                   setAdvice(getHealthAdvice(ex));
                   setSent("");
                 }}
-                className="rounded-full border border-border/60 bg-white/[0.03] px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
+                className="rounded-full border border-border/60 bg-secondary px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
               >
                 {ex}
               </button>
@@ -92,7 +92,7 @@ function MemberHealthPage() {
             <Button
               type="button"
               variant="outline"
-              className="border-border/70 bg-white/5"
+              className="border-border/70 bg-secondary"
               disabled={!issue.trim()}
               onClick={() => {
                 const res = reportHealthIssue(issue);
@@ -161,7 +161,7 @@ function AdviceList({
       </div>
       <ul className="mt-3 space-y-2">
         {items.map((i) => (
-          <li key={i} className="rounded-xl border border-border/60 bg-white/[0.03] p-3 text-sm">
+          <li key={i} className="rounded-xl border border-border/60 bg-secondary p-3 text-sm">
             {i}
           </li>
         ))}

@@ -81,7 +81,7 @@ function TrainerPortal() {
             {members.map((m) => (
               <div
                 key={m.id}
-                className="flex items-center gap-3 rounded-xl border border-border/60 bg-white/[0.03] p-3"
+                className="flex items-center gap-3 rounded-xl border border-border/60 bg-secondary p-3"
               >
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{m.name}</p>
@@ -90,7 +90,7 @@ function TrainerPortal() {
                 <Button
                   size="sm"
                   variant={m.attendanceToday ? "default" : "outline"}
-                  className={m.attendanceToday ? "" : "border-border/70 bg-white/5"}
+                  className={m.attendanceToday ? "" : "border-border/70 bg-secondary"}
                   onClick={() => toggleAttendance(m.id)}
                 >
                   {m.attendanceToday ? <CheckCircle2 className="size-4" /> : <Circle className="size-4" />}
@@ -114,7 +114,7 @@ function TrainerPortal() {
           </div>
           <div className="mt-4 space-y-3">
             {pending.map((r) => (
-              <div key={r.id} className="rounded-xl border border-border/60 bg-white/[0.03] p-3">
+              <div key={r.id} className="rounded-xl border border-border/60 bg-secondary p-3">
                 <p className="text-sm font-medium">{nameOf(r.memberId)}</p>
                 <p className="mt-0.5 text-xs text-muted-foreground">{r.goal}</p>
                 <Button size="sm" className="mt-3" onClick={() => setOpen(r)}>
@@ -176,7 +176,7 @@ function TrainerPortal() {
             </div>
 
             {req.prefs ? (
-              <div className="mt-4 rounded-xl border border-border/60 bg-white/[0.03] p-3 text-xs text-muted-foreground">
+              <div className="mt-4 rounded-xl border border-border/60 bg-secondary p-3 text-xs text-muted-foreground">
                 <p className="font-medium text-foreground">Member preferences</p>
                 <p className="mt-1">
                   {foodPreferenceLabel[req.prefs.foodPreference]} · {dietGoalLabel[req.prefs.goal]} ·{" "}
@@ -195,7 +195,7 @@ function TrainerPortal() {
                 {req.workout.map((ex, i) => (
                   <div
                     key={`${ex.name}-${i}`}
-                    className="flex flex-wrap items-center gap-2 rounded-lg border border-border/60 bg-white/[0.03] p-3"
+                    className="flex flex-wrap items-center gap-2 rounded-lg border border-border/60 bg-secondary p-3"
                   >
                     <p className="min-w-0 flex-1 truncate text-sm font-medium">{ex.name}</p>
                     <span className="text-sm text-primary">{ex.sets}</span>
@@ -213,7 +213,7 @@ function TrainerPortal() {
                 {req.diet.map((m, i) => (
                   <div
                     key={`${m.time}-${i}`}
-                    className="flex flex-wrap items-center gap-2 rounded-lg border border-border/60 bg-white/[0.03] p-3"
+                    className="flex flex-wrap items-center gap-2 rounded-lg border border-border/60 bg-secondary p-3"
                   >
                     <span className="text-sm font-semibold text-primary">{m.time}</span>
                     <p className="min-w-0 flex-1 text-sm">{m.meal}</p>
@@ -235,7 +235,7 @@ function TrainerPortal() {
               </Button>
               <Button
                 variant="outline"
-                className="flex-1 border-border/70 bg-white/5"
+                className="flex-1 border-border/70 bg-secondary"
                 onClick={() => setEditing(true)}
               >
                 <Pencil className="size-4" /> Edit Plan

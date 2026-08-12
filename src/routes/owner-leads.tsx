@@ -82,12 +82,12 @@ function OwnerLeads() {
         <h2 className="text-lg font-semibold">Pipeline</h2>
         <div className="mt-4 space-y-3">
           {leads.length === 0 ? (
-            <p className="rounded-xl border border-border/60 bg-white/[0.03] p-3 text-sm text-muted-foreground">
+            <p className="rounded-xl border border-border/60 bg-secondary p-3 text-sm text-muted-foreground">
               No leads yet. Add walk-ins and enquiries above.
             </p>
           ) : (
             leads.map((l) => (
-              <div key={l.id} className="rounded-xl border border-border/60 bg-white/[0.03] p-3">
+              <div key={l.id} className="rounded-xl border border-border/60 bg-secondary p-3">
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{l.name}</p>
@@ -98,7 +98,7 @@ function OwnerLeads() {
                   <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusStyles[l.status]}`}>
                     {l.status}
                   </span>
-                  <Button asChild size="sm" variant="outline" className="border-border/70 bg-white/5">
+                  <Button asChild size="sm" variant="outline" className="border-border/70 bg-secondary">
                     <a href={telHref(l.phone)}>
                       <Phone className="size-4" />
                     </a>

@@ -50,13 +50,13 @@ function OwnerMembers() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search by name, email or phone"
-            className="h-9 border-border/60 bg-white/5"
+            className="h-9 border-border/60 bg-secondary"
           />
         </div>
 
         <div className="mt-4 space-y-3">
           {members.length === 0 ? (
-            <p className="rounded-xl border border-border/60 bg-white/[0.03] p-3 text-sm text-muted-foreground">
+            <p className="rounded-xl border border-border/60 bg-secondary p-3 text-sm text-muted-foreground">
               No members match that search.
             </p>
           ) : (
@@ -65,7 +65,7 @@ function OwnerMembers() {
               return (
                 <div
                   key={m.id}
-                  className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-border/60 bg-white/[0.03] p-3 sm:flex sm:flex-wrap"
+                  className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-border/60 bg-secondary p-3 sm:flex sm:flex-wrap"
                 >
                   <div className="min-w-0 sm:flex-1">
                     <p className="truncate text-sm font-medium">{m.name}</p>
@@ -88,12 +88,12 @@ function OwnerMembers() {
                     >
                       {active ? "active" : "pending"}
                     </span>
-                    <Button asChild size="sm" variant="outline" className="border-border/70 bg-white/5">
+                    <Button asChild size="sm" variant="outline" className="border-border/70 bg-secondary">
                       <a href={telHref(m.phone)}>
                         <Phone className="size-4" />
                       </a>
                     </Button>
-                    <Button asChild size="sm" variant="outline" className="border-border/70 bg-white/5">
+                    <Button asChild size="sm" variant="outline" className="border-border/70 bg-secondary">
                       <a href={waHref(m.phone, `Hi ${m.name}, this is your gym.`)} target="_blank" rel="noreferrer">
                         <MessageCircle className="size-4" />
                       </a>
@@ -126,7 +126,7 @@ function OwnerMembers() {
 
 function Metric({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-xl border border-border/60 bg-white/[0.03] p-3">
+    <div className="rounded-xl border border-border/60 bg-secondary p-3">
       <p className="text-xs uppercase tracking-widest text-muted-foreground">{label}</p>
       <p className="mt-1 text-2xl font-semibold">{value}</p>
     </div>

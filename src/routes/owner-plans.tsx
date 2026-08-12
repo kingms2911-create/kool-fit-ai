@@ -179,7 +179,7 @@ function OwnerPlans() {
           >
             <Wand2 className="size-4" /> Generate & assign plan
           </Button>
-          <Button variant="outline" className="border-border/70 bg-white/5" onClick={() => setEditing(true)}>
+          <Button variant="outline" className="border-border/70 bg-secondary" onClick={() => setEditing(true)}>
             Edit plan
           </Button>
           {override ? (
@@ -196,7 +196,7 @@ function OwnerPlans() {
           <h2 className="text-lg font-semibold">Workout preview</h2>
           <div className="mt-3 space-y-2">
             {plan.workout.map((w, i) => (
-              <div key={`${w.name}-${i}`} className="rounded-xl border border-border/60 bg-white/[0.03] p-3">
+              <div key={`${w.name}-${i}`} className="rounded-xl border border-border/60 bg-secondary p-3">
                 <p className="text-sm font-medium">{w.name}</p>
                 <p className="text-xs text-muted-foreground">
                   {w.sets} · {w.notes}
@@ -209,7 +209,7 @@ function OwnerPlans() {
           <h2 className="text-lg font-semibold">Diet preview — ghar ka khana</h2>
           <div className="mt-3 space-y-2">
             {plan.diet.map((d, i) => (
-              <div key={`${d.time}-${i}`} className="rounded-xl border border-border/60 bg-white/[0.03] p-3">
+              <div key={`${d.time}-${i}`} className="rounded-xl border border-border/60 bg-secondary p-3">
                 <p className="text-sm font-medium">
                   {d.time} · {d.meal}
                 </p>
@@ -227,7 +227,7 @@ function OwnerPlans() {
         </div>
         <div className="mt-3 space-y-2">
           {members.filter((m) => m.assignedPlan).length === 0 ? (
-            <p className="rounded-xl border border-border/60 bg-white/[0.03] p-3 text-sm text-muted-foreground">
+            <p className="rounded-xl border border-border/60 bg-secondary p-3 text-sm text-muted-foreground">
               No plans assigned yet.
             </p>
           ) : (
@@ -236,7 +236,7 @@ function OwnerPlans() {
               .map((m) => (
                 <div
                   key={m.id}
-                  className="flex flex-wrap items-center gap-3 rounded-xl border border-border/60 bg-white/[0.03] p-3 text-sm"
+                  className="flex flex-wrap items-center gap-3 rounded-xl border border-border/60 bg-secondary p-3 text-sm"
                 >
                   <span className="min-w-0 flex-1 truncate font-medium">{m.name}</span>
                   <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
@@ -280,7 +280,7 @@ function Select({
       id={id}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="h-9 w-full rounded-md border border-input bg-white/5 px-3 text-sm outline-none"
+      className="h-9 w-full rounded-md border border-input bg-secondary px-3 text-sm outline-none"
     >
       {options.map(([v, l]) => (
         <option key={v} value={v} className="bg-background">

@@ -76,7 +76,7 @@ function SuperAdmin() {
             return (
               <div
                 key={g.id}
-                className="flex flex-wrap items-center gap-3 rounded-xl border border-border/60 bg-white/[0.03] p-3"
+                className="flex flex-wrap items-center gap-3 rounded-xl border border-border/60 bg-secondary p-3"
               >
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{g.name}</p>
@@ -100,7 +100,7 @@ function SuperAdmin() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="border-border/70 bg-white/5"
+                  className="border-border/70 bg-secondary"
                   onClick={() => setGymActive(g.id, !active)}
                 >
                   <Power className="size-4" /> {active ? "Deactivate" : "Activate"}

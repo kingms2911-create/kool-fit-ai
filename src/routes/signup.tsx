@@ -62,7 +62,7 @@ function SignupPage() {
           Pick how you&apos;ll use Kool Fit AI. You&apos;re signed in immediately — no email verification.
         </p>
 
-        <div className="mt-5 grid grid-cols-2 gap-2 rounded-2xl border border-border/60 bg-white/[0.03] p-1">
+        <div className="mt-5 grid grid-cols-2 gap-2 rounded-2xl border border-border/60 bg-secondary p-1">
           <RoleButton
             active={role === "owner"}
             onClick={() => setRole("owner")}
@@ -78,7 +78,7 @@ function SignupPage() {
         </div>
 
         {role === "member" ? (
-          <div className="mt-6 rounded-2xl border border-border/60 bg-white/[0.03] p-4 text-center">
+          <div className="mt-6 rounded-2xl border border-border/60 bg-secondary p-4 text-center">
             <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-primary/15 text-primary">
               <KeyRound className="size-5" />
             </span>

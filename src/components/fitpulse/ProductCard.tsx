@@ -8,7 +8,7 @@ const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 export function ProductCard({ product, onRemove }: { product: Product; onRemove?: (id: string) => void }) {
   const global = product.scope === "global";
   return (
-    <article className="flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-white/[0.03]">
+    <article className="flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-secondary">
       <div className="relative aspect-[4/3] w-full bg-zinc-900">
         {product.imageUrl ? (
           <img
@@ -46,7 +46,7 @@ export function ProductCard({ product, onRemove }: { product: Product; onRemove?
             <Button
               size="sm"
               variant="outline"
-              className="border-border/70 bg-white/5"
+              className="border-border/70 bg-secondary"
               onClick={() => onRemove(product.id)}
             >
               <Trash2 className="size-3.5" /> Remove

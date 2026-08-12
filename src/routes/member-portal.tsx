@@ -107,7 +107,7 @@ function MemberPortal() {
               value={goal}
               onChange={(e) => setGoal(e.target.value)}
               placeholder="Your goal, e.g. lean bulk"
-              className="h-9 min-w-0 flex-1 rounded-md border border-input bg-white/5 px-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
+              className="h-9 min-w-0 flex-1 rounded-md border border-input bg-secondary px-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
             />
           </div>
 
@@ -148,7 +148,7 @@ function MemberPortal() {
                 step={50}
                 value={prefs.calorieTarget}
                 onChange={(e) => setPrefs({ ...prefs, calorieTarget: Number(e.target.value) })}
-                className="h-9 w-full rounded-md border border-input bg-white/5 px-3 text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                className="h-9 w-full rounded-md border border-input bg-secondary px-3 text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
               />
             </Field>
 
@@ -157,7 +157,7 @@ function MemberPortal() {
                 value={prefs.favouriteFoods}
                 onChange={(e) => setPrefs({ ...prefs, favouriteFoods: e.target.value })}
                 placeholder="Paneer, eggs, oats, soya…"
-                className="h-9 w-full rounded-md border border-input bg-white/5 px-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
+                className="h-9 w-full rounded-md border border-input bg-secondary px-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
               />
             </Field>
             <Field label="Restrictions / allergies">
@@ -165,7 +165,7 @@ function MemberPortal() {
                 value={prefs.restrictions}
                 onChange={(e) => setPrefs({ ...prefs, restrictions: e.target.value })}
                 placeholder="Lactose, nuts, gluten…"
-                className="h-9 w-full rounded-md border border-input bg-white/5 px-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
+                className="h-9 w-full rounded-md border border-input bg-secondary px-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
               />
             </Field>
           </div>
@@ -188,7 +188,7 @@ function MemberPortal() {
               {myRequests.slice(0, 3).map((r) => (
                 <div
                   key={r.id}
-                  className="flex items-center gap-2 rounded-lg border border-border/60 bg-white/[0.03] px-3 py-2 text-xs"
+                  className="flex items-center gap-2 rounded-lg border border-border/60 bg-secondary px-3 py-2 text-xs"
                 >
                   <span className="min-w-0 flex-1 truncate">{r.goal}</span>
                   <span className="capitalize text-primary">{r.status}</span>
@@ -212,7 +212,7 @@ function MemberPortal() {
                 : "Pay online to activate your membership"}
             </p>
           </div>
-          <Button asChild variant="outline" className="border-border/70 bg-white/5">
+          <Button asChild variant="outline" className="border-border/70 bg-secondary">
             <Link to="/checkout">Renew online</Link>
           </Button>
           <Button
@@ -325,14 +325,14 @@ function Checklist({
         <h2 className="text-lg font-semibold">{title}</h2>
         <span className="text-sm text-primary">{pct}%</span>
       </div>
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-accent">
         <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
       </div>
       <div className="mt-4 space-y-2">
         {items.map((i) => (
           <div
             key={i.id}
-            className="flex items-center gap-2 rounded-xl border border-border/60 bg-white/[0.03] p-3"
+            className="flex items-center gap-2 rounded-xl border border-border/60 bg-secondary p-3"
           >
             <button
               type="button"
@@ -389,7 +389,7 @@ function Select({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="h-9 w-full rounded-md border border-input bg-white/5 px-3 text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
+      className="h-9 w-full rounded-md border border-input bg-secondary px-3 text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
     >
       {options.map(([v, l]) => (
         <option key={v} value={v} className="bg-card">
@@ -458,7 +458,7 @@ function CalorieTracker({
               ["Carbs", carbs],
               ["Fat", fat],
             ].map(([label, value]) => (
-              <div key={String(label)} className="rounded-xl border border-border/60 bg-white/[0.03] p-2 text-center">
+              <div key={String(label)} className="rounded-xl border border-border/60 bg-secondary p-2 text-center">
                 <p className="text-sm font-semibold">{value}g</p>
                 <p className="text-[11px] text-muted-foreground">{label}</p>
               </div>
@@ -477,7 +477,7 @@ function CalorieTracker({
               value={target}
               disabled={disabled}
               onChange={(e) => onTarget(Number(e.target.value))}
-              className="h-9 w-28 rounded-md border border-input bg-white/5 px-3 text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="h-9 w-28 rounded-md border border-input bg-secondary px-3 text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
             />
           </div>
         </div>
@@ -503,7 +503,7 @@ function CalorieTracker({
           onChange={(e) => setForm({ ...form, label: e.target.value })}
           placeholder="2 Roti + Dal"
           aria-label="Meal"
-          className="h-9 rounded-md border border-input bg-white/5 px-3 text-sm outline-none sm:col-span-2"
+          className="h-9 rounded-md border border-input bg-secondary px-3 text-sm outline-none sm:col-span-2"
         />
         {(["kcal", "protein", "carbs", "fat"] as const).map((k) => (
           <input
@@ -514,7 +514,7 @@ function CalorieTracker({
             onChange={(e) => setForm({ ...form, [k]: e.target.value })}
             placeholder={k === "kcal" ? "kcal" : `${k[0]!.toUpperCase()}g`}
             aria-label={k}
-            className="h-9 rounded-md border border-input bg-white/5 px-3 text-sm outline-none"
+            className="h-9 rounded-md border border-input bg-secondary px-3 text-sm outline-none"
           />
         ))}
         <Button type="submit" className="sm:col-span-6" disabled={disabled}>
@@ -527,7 +527,7 @@ function CalorieTracker({
           {todays.map((f) => (
             <div
               key={f.id}
-              className="flex items-center gap-2 rounded-lg border border-border/60 bg-white/[0.03] px-3 py-2 text-xs"
+              className="flex items-center gap-2 rounded-lg border border-border/60 bg-secondary px-3 py-2 text-xs"
             >
               <span className="min-w-0 flex-1 truncate">{f.label}</span>
               <span className="text-muted-foreground">
