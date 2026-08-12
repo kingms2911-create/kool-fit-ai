@@ -4,7 +4,7 @@ import { Dumbbell, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useStore, roleHome, SUPER_ADMIN_EMAIL, SUPER_ADMIN_PASSWORD } from "@/lib/fitpulse-store";
+import { useStore, roleHome } from "@/lib/fitpulse-store";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -98,16 +98,10 @@ function LoginPage() {
             <Link to="/signup" className="text-primary hover:underline">
               Create account (Gym Owner or Member)
             </Link>
-            <Link to="/register-gym" className="text-primary hover:underline">
-              Register New Gym
-            </Link>
-            <Link to="/join" className="text-primary hover:underline">
-              Join as Member with Gym Code
-            </Link>
             <Button
               type="button"
               variant="outline"
-              className="h-10 w-full border-border/70 bg-white/5"
+              className="h-10 w-full border-border/70 bg-secondary"
               onClick={() => {
                 const res = guestSignIn();
                 if (!res.ok) return setError(res.error ?? "Demo unavailable");
@@ -117,18 +111,6 @@ function LoginPage() {
             >
               Explore Demo / Guest View
             </Button>
-            <button
-              type="button"
-              className="text-xs text-muted-foreground hover:text-foreground"
-              onClick={() => {
-                setEmail(SUPER_ADMIN_EMAIL);
-                setPassword(SUPER_ADMIN_PASSWORD);
-                attempt(SUPER_ADMIN_EMAIL, SUPER_ADMIN_PASSWORD);
-              }}
-            >
-              Super Admin Portal
-            </button>
-
           </div>
 
         </form>

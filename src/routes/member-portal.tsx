@@ -254,7 +254,7 @@ function MemberPortal() {
               {currentGym?.timings ?? "Timings not set"} · {currentGym?.address ?? "Address not added"}
             </p>
           </div>
-          <Button asChild variant="outline" className="border-border/70 bg-white/5">
+          <Button asChild variant="outline" className="border-border/70 bg-secondary">
             <a href={mapsUrl} target="_blank" rel="noreferrer">
               <MapPin className="size-4" /> Navigate to Gym
             </a>
@@ -295,7 +295,7 @@ function MemberPortal() {
 
 function Quick({ icon, label, href }: { icon: React.ReactNode; label: string; href: string }) {
   return (
-    <Button asChild variant="outline" className="h-11 w-full border-border/70 bg-white/5 text-xs">
+    <Button asChild variant="outline" className="h-11 w-full border-border/70 bg-secondary text-xs">
       <a href={href} target="_blank" rel="noreferrer">
         {icon} {label}
       </a>
