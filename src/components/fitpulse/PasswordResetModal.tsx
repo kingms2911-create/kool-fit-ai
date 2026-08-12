@@ -23,7 +23,7 @@ export function PasswordResetModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-4">
+    <div className="fixed inset-0 z-50 grid place-items-center bg-zinc-950 p-4">
       <form onSubmit={submit} className="glass-strong w-full max-w-md rounded-2xl p-6">
         <span className="grid size-11 place-items-center rounded-xl bg-primary/15 text-primary glow-ring">
           <ShieldAlert className="size-5" />

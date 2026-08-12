@@ -63,50 +63,45 @@
 
 :root {
   --radius: 0.9rem;
-  --background: oklch(0.17 0.021 258);
-  --foreground: oklch(0.97 0.005 250);
-  --card: oklch(0.21 0.008 258);
+  --background: oklch(0.141 0.005 285.823);
+  --foreground: oklch(0.967 0.001 286.375);
+  --card: oklch(0.21 0.006 285.885);
   --card-foreground: oklch(0.97 0.005 250);
-  --popover: oklch(0.2 0.023 258);
+  --popover: oklch(0.21 0.006 285.885);
   --popover-foreground: oklch(0.97 0.005 250);
   --primary: oklch(0.72 0.16 162);
   --primary-foreground: oklch(0.17 0.03 165);
-  --secondary: oklch(0.28 0.026 258);
+  --secondary: oklch(0.21 0.006 285.885);
   --secondary-foreground: oklch(0.95 0.005 250);
-  --muted: oklch(0.27 0.024 258);
+  --muted: oklch(0.274 0.006 286.033);
   --muted-foreground: oklch(0.72 0.02 254);
-  --accent: oklch(0.3 0.035 258);
+  --accent: oklch(0.274 0.006 286.033);
   --accent-foreground: oklch(0.97 0.005 250);
   --destructive: oklch(0.62 0.2 22);
   --destructive-foreground: oklch(0.98 0.005 250);
-  --border: oklch(0.98 0.01 250 / 12%);
-  --input: oklch(0.98 0.01 250 / 16%);
+  --border: oklch(0.274 0.006 286.033);
+  --input: oklch(0.274 0.006 286.033);
   --ring: oklch(0.72 0.16 162);
   --chart-1: oklch(0.72 0.16 162);
   --chart-2: oklch(0.7 0.12 200);
   --chart-3: oklch(0.78 0.15 90);
   --chart-4: oklch(0.65 0.15 300);
   --chart-5: oklch(0.68 0.17 25);
-  --sidebar: oklch(0.2 0.023 258);
+  --sidebar: oklch(0.21 0.006 285.885);
   --sidebar-foreground: oklch(0.97 0.005 250);
   --sidebar-primary: oklch(0.72 0.16 162);
   --sidebar-primary-foreground: oklch(0.17 0.03 165);
-  --sidebar-accent: oklch(0.28 0.026 258);
+  --sidebar-accent: oklch(0.274 0.006 286.033);
   --sidebar-accent-foreground: oklch(0.97 0.005 250);
-  --sidebar-border: oklch(0.98 0.01 250 / 12%);
+  --sidebar-border: oklch(0.274 0.006 286.033);
   --sidebar-ring: oklch(0.72 0.16 162);
 
-  --surface-base: #0b0f17;
+  --surface-base: oklch(0.141 0.005 285.823);
   --emerald: oklch(0.72 0.16 162);
-  --glass-bg: linear-gradient(
-    145deg,
-    oklch(0.98 0.01 250 / 8%) 0%,
-    oklch(0.98 0.01 250 / 3%) 100%
-  );
-  --glass-border: oklch(0.98 0.01 250 / 12%);
-  --glow-emerald: 0 0 0 1px oklch(0.72 0.16 162 / 25%), 0 18px 50px -18px oklch(0.72 0.16 162 / 45%);
-  --shadow-card: 0 24px 60px -30px oklch(0 0 0 / 80%);
-  --gradient-hero: none;
+  --glass-bg: oklch(0.21 0.006 285.885);
+  --glass-border: oklch(0.274 0.006 286.033);
+  --glow-emerald: none;
+  --shadow-card: none;
 }
 
 .dark {
@@ -116,6 +111,18 @@
 @layer base {
   * {
     border-color: var(--color-border);
+    background-image: none !important;
+    backdrop-filter: none !important;
+    filter: none !important;
+    will-change: auto !important;
+  }
+
+  *::before,
+  *::after {
+    background-image: none !important;
+    backdrop-filter: none !important;
+    filter: none !important;
+    will-change: auto !important;
   }
 
   html {
@@ -123,8 +130,7 @@
   }
 
   body {
-    /* Solid dark surface — no gradients or filters (mobile rendering stability). */
-    background-color: oklch(0.16 0.006 258);
+    background-color: var(--background);
     background-image: none;
     color: var(--color-foreground);
     font-family:
@@ -140,33 +146,39 @@
   h2,
   h3,
   h4 {
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
+  }
+
+  /*
+   * Mobile GPU fail-safe: any legacy alpha-background utility still present in
+   * feature markup is forced onto an opaque zinc surface. This prevents cards,
+   * sheets, badges and fixed overlays from compositing against moving content.
+   */
+  :where([class*="bg-"][class*="/"]) {
+    background-color: var(--secondary) !important;
   }
 }
 
 @utility glass {
-  background-color: oklch(0.21 0.008 258);
+  background-color: var(--card);
   background-image: none;
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--shadow-card);
-
+  border: 1px solid var(--border);
+  box-shadow: none;
 }
 
 @utility glass-strong {
-  background-color: oklch(0.19 0.008 258);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--shadow-card);
-
+  background-color: var(--card);
+  background-image: none;
+  border: 1px solid var(--border);
+  box-shadow: none;
 }
 
 @utility glow-ring {
-  box-shadow: var(--glow-emerald);
+  box-shadow: none;
 }
 
 @utility text-gradient-emerald {
-  background: linear-gradient(100deg, oklch(0.86 0.13 165), oklch(0.68 0.16 172));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  background: none;
+  color: var(--primary);
 }
 

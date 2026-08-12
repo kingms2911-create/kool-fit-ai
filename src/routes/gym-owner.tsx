@@ -319,7 +319,7 @@ function FormModal({
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-4">
+    <div className="fixed inset-0 z-50 grid place-items-center bg-zinc-950 p-4">
       <form
         className="glass-strong w-full max-w-md rounded-2xl p-6"
         onSubmit={(e) => {
