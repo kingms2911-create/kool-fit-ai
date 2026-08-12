@@ -119,14 +119,14 @@ export function AppShell({
 
 
   return (
-    <div className="min-h-screen overflow-x-hidden pb-24">
+    <div className="min-h-screen overflow-x-hidden bg-zinc-950 pb-24 text-zinc-100">
       <PasswordResetModal />
       {state.guest ? (
         <div className="sticky top-0 z-50 bg-primary px-4 py-2 text-center text-xs font-medium text-primary-foreground">
           Like this app? Ask your Gym Owner to register you! · Read-only demo preview
         </div>
       ) : null}
-      <header className="sticky top-0 z-40 glass-strong border-b border-border/60">
+      <header className="sticky top-0 z-40 border-b border-zinc-800 bg-zinc-950">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
           <Link to="/login" className="flex items-center gap-2">
             <span className="grid size-9 place-items-center rounded-xl bg-primary/15 text-primary glow-ring">
@@ -172,5 +172,5 @@ export function AppShell({
 }
 
 export function GlassCard({ className = "", children }: { className?: string; children: ReactNode }) {
-  return <div className={`glass rounded-2xl p-5 ${className}`}>{children}</div>;
+  return <div className={`rounded-2xl border border-zinc-800 bg-zinc-900 p-5 ${className}`}>{children}</div>;
 }

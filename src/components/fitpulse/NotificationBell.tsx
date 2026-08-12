@@ -50,9 +50,9 @@ export function NotificationBell() {
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-[60] flex justify-end bg-black/70" onClick={() => setOpen(false)}>
+        <div className="fixed inset-0 z-[60] flex justify-end bg-zinc-950" onClick={() => setOpen(false)}>
           <div
-            className="h-full w-full max-w-sm overflow-y-auto border-l border-border/60 bg-card p-5 pb-24"
+            className="h-full w-full max-w-sm overflow-y-auto border-l border-zinc-800 bg-zinc-900 p-5 pb-24"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-2">
@@ -86,7 +86,7 @@ export function NotificationBell() {
 
             <div className="mt-4 space-y-2">
               {mine.length === 0 ? (
-                <p className="rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm text-muted-foreground">
+                <p className="rounded-xl border border-zinc-800 bg-zinc-900 p-3 text-sm text-muted-foreground">
                   Nothing yet. Approvals, renewals and announcements land here.
                 </p>
               ) : (
@@ -105,7 +105,7 @@ export function NotificationBell() {
                       }
                     }}
                     className={`flex w-full items-start gap-2 rounded-xl border p-3 text-left transition-colors hover:bg-secondary ${
-                      n.read ? "border-border/60 bg-secondary/40" : "border-primary/40 bg-secondary"
+                      n.read ? "border-zinc-800 bg-zinc-900" : "border-zinc-800 bg-zinc-900"
                     }`}
                   >
                     <div className="min-w-0 flex-1">

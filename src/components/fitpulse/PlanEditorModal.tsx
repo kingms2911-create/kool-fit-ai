@@ -31,8 +31,8 @@ export function PlanEditorModal({
     setD((arr) => arr.map((m, idx) => (idx === i ? { ...m, [k]: v } : m)));
 
   return (
-    <div className="fixed inset-0 z-[70] grid place-items-center bg-black/80 p-4">
-      <div className="max-h-[88vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-border/60 bg-card p-6 pb-24">
+    <div className="fixed inset-0 z-[70] grid place-items-center bg-zinc-950 p-4">
+      <div className="max-h-[88vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-900 p-6 pb-24">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold">Edit plan</h2>

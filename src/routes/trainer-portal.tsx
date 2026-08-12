@@ -142,7 +142,7 @@ function TrainerPortal() {
                 key={h.id}
                 id={`issue-${h.id}`}
                 className={`rounded-xl border p-3 ${
-                  focus === h.id ? "border-primary/60 bg-secondary" : "border-border/60 bg-secondary/40"
+                   focus === h.id ? "border-primary bg-zinc-900" : "border-zinc-800 bg-zinc-900"
                 }`}
               >
                 <p className="text-sm font-medium">{nameOf(h.memberId)}</p>
@@ -163,8 +163,8 @@ function TrainerPortal() {
       </div>
 
       {req ? (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-4">
-          <div className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-border/60 bg-card p-6 pb-24">
+        <div className="fixed inset-0 z-50 grid place-items-center bg-zinc-950 p-4">
+          <div className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-900 p-6 pb-24">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-xl font-semibold">AI plan for {nameOf(req.memberId)}</h2>

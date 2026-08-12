@@ -432,10 +432,7 @@ function CalorieTracker({
     <GlassCard className="mt-4">
       <div className="flex flex-wrap items-center gap-5">
         <div
-          className="grid size-28 shrink-0 place-items-center rounded-full"
-          style={{
-            background: `conic-gradient(hsl(var(--primary)) ${pct * 3.6}deg, hsl(var(--muted)) 0deg)`,
-          }}
+          className="grid size-28 shrink-0 place-items-center rounded-full border-4 border-zinc-800 bg-zinc-900"
           role="img"
           aria-label={`${consumed} of ${target} kcal consumed`}
         >
