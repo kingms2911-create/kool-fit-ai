@@ -173,7 +173,7 @@ function JoinMember() {
                     className={`rounded-xl border p-3 text-left transition-colors ${
                       months === m
                         ? "border-primary/60 bg-primary/10 ring-1 ring-primary/50"
-                        : "border-border/60 bg-secondary hover:bg-white/[0.06]"
+                        : "border-border/60 bg-secondary hover:bg-accent"
                     }`}
                   >
                     <span className="block text-xs text-muted-foreground">{m} month</span>

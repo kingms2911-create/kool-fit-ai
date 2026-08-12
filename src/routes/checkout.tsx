@@ -83,7 +83,7 @@ function CheckoutPage() {
                   type="button"
                   onClick={() => setMonths(o.months)}
                   className={`glass rounded-2xl p-5 text-left transition-colors ${
-                    months === o.months ? "border-primary/60 ring-1 ring-primary/50" : "hover:bg-white/[0.06]"
+                    months === o.months ? "border-primary/60 ring-1 ring-primary/50" : "hover:bg-accent"
                   }`}
                 >
                   <p className="text-xs uppercase tracking-widest text-muted-foreground">{planLabel(o.months)}</p>
