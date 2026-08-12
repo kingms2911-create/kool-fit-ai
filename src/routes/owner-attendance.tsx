@@ -42,7 +42,7 @@ function OwnerAttendance() {
           {members.map((m) => (
             <div
               key={m.id}
-              className="flex flex-wrap items-center gap-3 rounded-xl border border-border/60 bg-white/[0.03] p-3"
+              className="flex flex-wrap items-center gap-3 rounded-xl border border-border/60 bg-secondary p-3"
             >
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{m.name}</p>
@@ -62,7 +62,7 @@ function OwnerAttendance() {
         <h2 className="text-lg font-semibold">Check-in log</h2>
         <div className="mt-3 space-y-2">
           {log.length === 0 ? (
-            <p className="rounded-xl border border-border/60 bg-white/[0.03] p-3 text-sm text-muted-foreground">
+            <p className="rounded-xl border border-border/60 bg-secondary p-3 text-sm text-muted-foreground">
               No check-ins recorded yet.
             </p>
           ) : (
@@ -71,7 +71,7 @@ function OwnerAttendance() {
               return (
                 <div
                   key={c.id}
-                  className="flex items-center gap-3 rounded-xl border border-border/60 bg-white/[0.03] px-3 py-2 text-sm"
+                  className="flex items-center gap-3 rounded-xl border border-border/60 bg-secondary px-3 py-2 text-sm"
                 >
                   <span className="min-w-0 flex-1 truncate">{m?.name ?? "Member"}</span>
                   <span className="text-xs text-muted-foreground">

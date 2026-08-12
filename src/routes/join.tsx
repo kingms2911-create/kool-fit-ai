@@ -109,7 +109,7 @@ function JoinMember() {
             {planLabel(months)} at the gym front desk. Once the owner marks the payment received, your
             dashboard unlocks instantly.
           </p>
-          <p className="mt-3 rounded-xl border border-border/60 bg-white/[0.03] p-3 text-xs text-muted-foreground">
+          <p className="mt-3 rounded-xl border border-border/60 bg-secondary p-3 text-xs text-muted-foreground">
             Status: <span className="text-chart-3">pending approval</span> · Payment:{" "}
             <span className="text-destructive">unpaid</span>
           </p>
@@ -173,7 +173,7 @@ function JoinMember() {
                     className={`rounded-xl border p-3 text-left transition-colors ${
                       months === m
                         ? "border-primary/60 bg-primary/10 ring-1 ring-primary/50"
-                        : "border-border/60 bg-white/[0.03] hover:bg-white/[0.06]"
+                        : "border-border/60 bg-secondary hover:bg-white/[0.06]"
                     }`}
                   >
                     <span className="block text-xs text-muted-foreground">{m} month</span>
@@ -197,7 +197,7 @@ function JoinMember() {
             </Button>
             <Button
               variant="outline"
-              className="h-11 w-full border-border/70 bg-white/5"
+              className="h-11 w-full border-border/70 bg-secondary"
               disabled={busy !== null}
               onClick={() => void handleChoice("gym")}
             >

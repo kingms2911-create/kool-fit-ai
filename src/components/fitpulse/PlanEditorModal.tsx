@@ -50,7 +50,7 @@ export function PlanEditorModal({
           </div>
           <div className="mt-3 space-y-3">
             {w.map((e, i) => (
-              <div key={i} className="grid gap-2 rounded-xl border border-border/60 bg-white/[0.03] p-3 sm:grid-cols-[2fr_1fr_2fr_auto]">
+              <div key={i} className="grid gap-2 rounded-xl border border-border/60 bg-secondary p-3 sm:grid-cols-[2fr_1fr_2fr_auto]">
                 <div className="space-y-1">
                   <Label className="text-xs">Exercise</Label>
                   <Input value={e.name} onChange={(ev) => setEx(i, "name", ev.target.value)} />
@@ -76,7 +76,7 @@ export function PlanEditorModal({
             <Button
               variant="outline"
               size="sm"
-              className="border-border/70 bg-white/5"
+              className="border-border/70 bg-secondary"
               onClick={() => setW((arr) => [...arr, { name: "", sets: "3 × 12", notes: "60s rest" }])}
             >
               <Plus className="size-4" /> Add exercise
@@ -91,7 +91,7 @@ export function PlanEditorModal({
           </div>
           <div className="mt-3 space-y-3">
             {d.map((m, i) => (
-              <div key={i} className="grid gap-2 rounded-xl border border-border/60 bg-white/[0.03] p-3 sm:grid-cols-[1fr_2fr_2fr_auto]">
+              <div key={i} className="grid gap-2 rounded-xl border border-border/60 bg-secondary p-3 sm:grid-cols-[1fr_2fr_2fr_auto]">
                 <div className="space-y-1">
                   <Label className="text-xs">Time</Label>
                   <Input value={m.time} onChange={(ev) => setMeal(i, "time", ev.target.value)} />
@@ -117,7 +117,7 @@ export function PlanEditorModal({
             <Button
               variant="outline"
               size="sm"
-              className="border-border/70 bg-white/5"
+              className="border-border/70 bg-secondary"
               onClick={() => setD((arr) => [...arr, { time: "18:00", meal: "", macros: "0 kcal · 0P/0C/0F" }])}
             >
               <Plus className="size-4" /> Add meal

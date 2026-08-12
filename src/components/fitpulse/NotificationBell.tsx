@@ -39,7 +39,7 @@ export function NotificationBell() {
         type="button"
         aria-label={`Notifications${unread ? `, ${unread} unread` : ""}`}
         onClick={() => setOpen(true)}
-        className="relative grid size-9 shrink-0 place-items-center rounded-xl border border-border/70 bg-white/5 text-foreground transition-colors hover:bg-white/10"
+        className="relative grid size-9 shrink-0 place-items-center rounded-xl border border-border/70 bg-secondary text-foreground transition-colors hover:bg-accent"
       >
         {unread ? <BellRing className="size-4 text-primary" /> : <Bell className="size-4" />}
         {unread ? (
@@ -73,7 +73,7 @@ export function NotificationBell() {
             {permission !== "granted" ? (
               <Button
                 variant="outline"
-                className="mt-4 h-10 w-full border-border/70 bg-white/5 text-xs"
+                className="mt-4 h-10 w-full border-border/70 bg-secondary text-xs"
                 onClick={async () => setPermission(await enablePush())}
               >
                 Enable push alerts on this device

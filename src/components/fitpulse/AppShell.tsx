@@ -145,7 +145,7 @@ export function AppShell({
           <Button
             variant="outline"
             size="sm"
-            className="border-border/70 bg-white/5"
+            className="border-border/70 bg-secondary"
             onClick={() => {
               signOut();
               void navigate({ to: "/login", replace: true });

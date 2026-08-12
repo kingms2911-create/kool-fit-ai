@@ -76,7 +76,7 @@ function OwnerDashboard() {
         <Button onClick={() => setModal("member")}>
           <UserPlus className="size-4" /> Add Member
         </Button>
-        <Button variant="outline" className="border-border/70 bg-white/5" onClick={() => setModal("trainer")}>
+        <Button variant="outline" className="border-border/70 bg-secondary" onClick={() => setModal("trainer")}>
           <ShieldCheck className="size-4" /> Add Trainer
         </Button>
       </div>
@@ -118,7 +118,7 @@ function OwnerDashboard() {
         </p>
         <div className="mt-4 space-y-3">
           {pendingMembers.length === 0 ? (
-            <p className="rounded-xl border border-border/60 bg-white/[0.03] p-3 text-sm text-muted-foreground">
+            <p className="rounded-xl border border-border/60 bg-secondary p-3 text-sm text-muted-foreground">
               No members waiting for cash payment approval.
             </p>
           ) : (
@@ -165,7 +165,7 @@ function OwnerDashboard() {
         </p>
         <div className="mt-4 space-y-3">
           {renewalMembers.length === 0 ? (
-            <p className="rounded-xl border border-border/60 bg-white/[0.03] p-3 text-sm text-muted-foreground">
+            <p className="rounded-xl border border-border/60 bg-secondary p-3 text-sm text-muted-foreground">
               No pending renewal requests.
             </p>
           ) : (
@@ -195,7 +195,7 @@ function OwnerDashboard() {
           {members.map((m) => (
             <div
               key={m.id}
-              className="flex flex-wrap items-center gap-3 rounded-xl border border-border/60 bg-white/[0.03] p-3"
+              className="flex flex-wrap items-center gap-3 rounded-xl border border-border/60 bg-secondary p-3"
             >
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{m.name}</p>
@@ -210,7 +210,7 @@ function OwnerDashboard() {
                 {m.subscription?.status}
               </span>
               {m.ownerCreated && m.password === DEFAULT_PASSWORD ? (
-                <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs text-muted-foreground">
+                <span className="rounded-full bg-accent px-2.5 py-1 text-xs text-muted-foreground">
                   Default password pending reset
                 </span>
               ) : null}
@@ -400,7 +400,7 @@ function GymCodeCard({ code }: { code: string }) {
         </span>
         <Button
           variant="outline"
-          className="border-border/70 bg-white/5"
+          className="border-border/70 bg-secondary"
           onClick={() => {
             void navigator.clipboard?.writeText(code);
             setCopied(true);

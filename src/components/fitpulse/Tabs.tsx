@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
 const base =
-  "shrink-0 rounded-full border border-border/60 bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground";
+  "shrink-0 rounded-full border border-border/60 bg-secondary px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground";
 const active = { className: `${base} border-primary/60 bg-primary/15 text-primary` };
 const inactive = { className: base };
 

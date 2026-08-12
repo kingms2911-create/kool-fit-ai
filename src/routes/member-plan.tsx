@@ -53,7 +53,7 @@ function MemberPlanPage() {
             </div>
             <div className="mt-4 space-y-2">
               {plan.workout.map((w) => (
-                <div key={w.name} className="rounded-xl border border-border/60 bg-white/[0.03] p-3">
+                <div key={w.name} className="rounded-xl border border-border/60 bg-secondary p-3">
                   <p className="text-sm font-medium">{w.name}</p>
                   <p className="text-xs text-muted-foreground">
                     {w.sets} · {w.notes}
@@ -72,7 +72,7 @@ function MemberPlanPage() {
             </div>
             <div className="mt-4 space-y-2">
               {plan.diet.map((d) => (
-                <div key={d.time} className="rounded-xl border border-border/60 bg-white/[0.03] p-3">
+                <div key={d.time} className="rounded-xl border border-border/60 bg-secondary p-3">
                   <p className="text-sm font-medium">
                     {d.time} · {d.meal}
                   </p>
