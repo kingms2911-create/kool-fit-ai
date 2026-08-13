@@ -83,12 +83,14 @@ export async function loadCloudSnapshot(): Promise<CloudSnapshot | null> {
   }
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 async function syncTable(table: string, rows: AnyRec[], idKey = "id") {
+  const client = supabase as any;
   if (rows.length) {
-    await supabase.from(table).upsert(rows as never, { onConflict: idKey });
+    await client.from(table).upsert(rows, { onConflict: idKey });
   }
   const ids = rows.map((r) => String(r[idKey]));
-  const query = supabase.from(table).delete();
+  const query = client.from(table).delete();
   await (ids.length ? query.not(idKey, "in", `(${ids.join(",")})`) : query.neq(idKey, "__none__"));
 }
 
@@ -99,13 +101,13 @@ export async function saveCloudSnapshot(snapshot: CloudSnapshot): Promise<void> 
     const userRows = snapshot.users.map((u) => {
       const { password, foodLog, ...rest } = u as AnyRec & { password?: string; foodLog?: AnyRec[] };
       for (const entry of foodLog ?? []) {
-        foodLogRows.push({ id: String(entry.id), member_id: String(u.id), data: entry });
+        foodLogRows.push({ id: String(entry["id"]), member_id: String(u["id"]), data: entry });
       }
       return {
-        id: String(u.id),
-        email: str(u.email) ?? "",
-        role: str(u.role),
-        gym_id: str(u.gymId),
+        id: String(u["id"]),
+        email: str(u["email"]) ?? "",
+        role: str(u["role"]),
+        gym_id: str(u["gymId"]),
         password_hash: password ?? "",
         data: rest,
         updated_at: new Date().toISOString(),
@@ -113,23 +115,23 @@ export async function saveCloudSnapshot(snapshot: CloudSnapshot): Promise<void> 
     });
 
     const simple = (rows: AnyRec[], extra: (r: AnyRec) => AnyRec = () => ({})) =>
-      rows.map((r) => ({ id: String(r.id), data: r, ...extra(r) }));
+      rows.map((r) => ({ id: String(r["id"]), data: r, ...extra(r) }));
 
     await Promise.all([
       syncTable("app_users", userRows),
       syncTable("food_logs", foodLogRows),
       syncTable("gyms", simple(snapshot.gyms)),
-      syncTable("plan_requests", simple(snapshot.requests, (r) => ({ member_id: str(r.memberId), gym_id: str(r.gymId), status: str(r.status) }))),
-      syncTable("leads", simple(snapshot.leads, (r) => ({ gym_id: str(r.gymId), status: str(r.status) }))),
-      syncTable("checkins", simple(snapshot.checkins, (r) => ({ member_id: str(r.memberId), gym_id: str(r.gymId) }))),
-      syncTable("notifications", simple(snapshot.notifications, (r) => ({ user_id: str(r.userId) }))),
-      syncTable("health_issues", simple(snapshot.healthIssues, (r) => ({ member_id: str(r.memberId), gym_id: str(r.gymId) }))),
-      syncTable("products", simple(snapshot.products, (r) => ({ scope: str(r.scope), gym_id: str(r.gymId) }))),
-      supabase.from("app_meta").upsert(
+      syncTable("plan_requests", simple(snapshot.requests, (r) => ({ member_id: str(r["memberId"]), gym_id: str(r["gymId"]), status: str(r["status"]) }))),
+      syncTable("leads", simple(snapshot.leads, (r) => ({ gym_id: str(r["gymId"]), status: str(r["status"]) }))),
+      syncTable("checkins", simple(snapshot.checkins, (r) => ({ member_id: str(r["memberId"]), gym_id: str(r["gymId"]) }))),
+      syncTable("notifications", simple(snapshot.notifications, (r) => ({ user_id: str(r["userId"]) }))),
+      syncTable("health_issues", simple(snapshot.healthIssues, (r) => ({ member_id: str(r["memberId"]), gym_id: str(r["gymId"]) }))),
+      syncTable("products", simple(snapshot.products, (r) => ({ scope: str(r["scope"]), gym_id: str(r["gymId"]) }))),
+      (supabase as any).from("app_meta").upsert(
         [
           { key: "workoutChecklist", data: { items: snapshot.workoutChecklist } },
           { key: "dietChecklist", data: { items: snapshot.dietChecklist } },
-        ] as never,
+        ],
         { onConflict: "key" },
       ),
     ]);
@@ -137,3 +139,4 @@ export async function saveCloudSnapshot(snapshot: CloudSnapshot): Promise<void> 
     /* offline — local cache keeps the app usable */
   }
 }
+
