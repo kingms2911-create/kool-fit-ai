@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { buildPlan } from "./diet-engine";
+import { hashPassword } from "./hash";
+import { loadCloudSnapshot, saveCloudSnapshot } from "./cloud-sync";
 
 export type Role = "super_admin" | "gym_owner" | "trainer" | "member";
 
@@ -336,11 +338,11 @@ const SEED_PRODUCTS = (gymId: string): Product[] => [
 function seed(): State {
   const gymId = "gym_pulse";
   const users: User[] = [
-    { id: "u_super", name: "Platform Admin", email: SUPER_ADMIN_EMAIL, password: SUPER_ADMIN_PASSWORD, role: "super_admin", ownerCreated: false, mustResetPassword: false, joinedAt: iso(today) },
-    { id: "u_owner", name: "Marcus Hale", email: "owner@fitpulse.ai", password: "Owner@123", role: "gym_owner", gymId, ownerCreated: false, mustResetPassword: false, joinedAt: iso(today) },
-    { id: "u_trainer", name: "Dana Kim", email: "trainer@fitpulse.ai", password: "Trainer@123", role: "trainer", gymId, ownerCreated: false, mustResetPassword: false, joinedAt: iso(today) },
+    { id: "u_super", name: "Platform Admin", email: SUPER_ADMIN_EMAIL, password: hashPassword(SUPER_ADMIN_PASSWORD), role: "super_admin", ownerCreated: false, mustResetPassword: false, joinedAt: iso(today) },
+    { id: "u_owner", name: "Marcus Hale", email: "owner@fitpulse.ai", password: hashPassword("Owner@123"), role: "gym_owner", gymId, ownerCreated: false, mustResetPassword: false, joinedAt: iso(today) },
+    { id: "u_trainer", name: "Dana Kim", email: "trainer@fitpulse.ai", password: hashPassword("Trainer@123"), role: "trainer", gymId, ownerCreated: false, mustResetPassword: false, joinedAt: iso(today) },
     {
-      id: "u_member", name: "Leo Fernandez", email: "member@fitpulse.ai", phone: "+91 98200 10142", password: "Member@2024", role: "member", gymId,
+      id: "u_member", name: "Leo Fernandez", email: "member@fitpulse.ai", phone: "+91 98200 10142", password: hashPassword("Member@2024"), role: "member", gymId,
       ownerCreated: false, mustResetPassword: false, trainerId: "u_trainer", joinedAt: iso(today), streak: 18, attendanceToday: true,
       subscription: {
         plan: planLabel(3), status: "active", amount: DEFAULT_PRICING.m3, months: 3,
@@ -348,7 +350,7 @@ function seed(): State {
       },
     },
     {
-      id: "u_deskmember", name: "Priya Nair", email: "desk@fitpulse.ai", phone: "+91 98200 10177", password: DEFAULT_PASSWORD, role: "member", gymId,
+      id: "u_deskmember", name: "Priya Nair", email: "desk@fitpulse.ai", phone: "+91 98200 10177", password: hashPassword(DEFAULT_PASSWORD), role: "member", gymId,
       ownerCreated: true, mustResetPassword: true, trainerId: "u_trainer", joinedAt: iso(today), streak: 3, attendanceToday: false,
       subscription: {
         plan: planLabel(1), status: "active", amount: DEFAULT_PRICING.m1, months: 1,
@@ -356,7 +358,7 @@ function seed(): State {
       },
     },
     {
-      id: "u_member3", name: "Tomas Weber", email: "tomas@fitpulse.ai", phone: "+91 98200 10190", password: "Tomas@123", role: "member", gymId,
+      id: "u_member3", name: "Tomas Weber", email: "tomas@fitpulse.ai", phone: "+91 98200 10190", password: hashPassword("Tomas@123"), role: "member", gymId,
       ownerCreated: false, mustResetPassword: false, trainerId: "u_trainer", joinedAt: iso(today), streak: 7, attendanceToday: false,
       subscription: {
         plan: planLabel(2), status: "expired", amount: DEFAULT_PRICING.m2, months: 2,
@@ -500,12 +502,12 @@ function migrate(s: State): State {
   const withSuper: User[] = s.users.some((u) => u.role === "super_admin")
     ? s.users.map((u) =>
         u.role === "super_admin"
-          ? { ...u, email: SUPER_ADMIN_EMAIL, password: SUPER_ADMIN_PASSWORD, mustResetPassword: false }
+          ? { ...u, email: SUPER_ADMIN_EMAIL, password: hashPassword(SUPER_ADMIN_PASSWORD), mustResetPassword: false }
           : u,
       )
     : [
         {
-          id: "u_super", name: "Platform Admin", email: SUPER_ADMIN_EMAIL, password: SUPER_ADMIN_PASSWORD,
+          id: "u_super", name: "Platform Admin", email: SUPER_ADMIN_EMAIL, password: hashPassword(SUPER_ADMIN_PASSWORD),
           role: "super_admin" as const, ownerCreated: false, mustResetPassword: false, joinedAt: iso(new Date()),
         },
         ...s.users,
@@ -553,14 +555,46 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<State>(seed);
   const [hydrated, setHydrated] = useState(false);
 
+  // 1) instant local cache, 2) authoritative cloud data (survives rebuilds)
   useEffect(() => {
+    let cancelled = false;
     try {
       const raw = localStorage.getItem(KEY) ?? localStorage.getItem(LEGACY_KEY);
       if (raw) setState(migrate(JSON.parse(raw) as State));
     } catch {
       /* ignore */
     }
-    setHydrated(true);
+
+    void (async () => {
+      const cloud = await loadCloudSnapshot();
+      if (cancelled) return;
+      if (cloud) {
+        setState((s) =>
+          migrate({
+            ...s,
+            users: cloud.users as unknown as User[],
+            gyms: cloud.gyms as unknown as Gym[],
+            requests: cloud.requests as unknown as PlanRequest[],
+            leads: cloud.leads as unknown as Lead[],
+            checkins: cloud.checkins as unknown as CheckIn[],
+            notifications: cloud.notifications as unknown as AppNotification[],
+            healthIssues: cloud.healthIssues as unknown as HealthIssue[],
+            products: cloud.products as unknown as Product[],
+            workoutChecklist: cloud.workoutChecklist.length
+              ? (cloud.workoutChecklist as unknown as ChecklistItem[])
+              : s.workoutChecklist,
+            dietChecklist: cloud.dietChecklist.length
+              ? (cloud.dietChecklist as unknown as ChecklistItem[])
+              : s.dietChecklist,
+          }),
+        );
+      }
+      setHydrated(true);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -571,7 +605,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       /* ignore */
     }
 
+    const t = setTimeout(() => {
+      void saveCloudSnapshot({
+        users: state.users as unknown as Record<string, unknown>[],
+        gyms: state.gyms as unknown as Record<string, unknown>[],
+        requests: state.requests as unknown as Record<string, unknown>[],
+        leads: state.leads as unknown as Record<string, unknown>[],
+        checkins: state.checkins as unknown as Record<string, unknown>[],
+        notifications: state.notifications as unknown as Record<string, unknown>[],
+        healthIssues: state.healthIssues as unknown as Record<string, unknown>[],
+        products: state.products as unknown as Record<string, unknown>[],
+        workoutChecklist: state.workoutChecklist as unknown as Record<string, unknown>[],
+        dietChecklist: state.dietChecklist as unknown as Record<string, unknown>[],
+      });
+    }, 700);
+    return () => clearTimeout(t);
   }, [state, hydrated]);
+
 
   const currentUser = state.users.find((u) => u.id === state.currentUserId) ?? null;
   const currentGym = state.gyms.find((g) => g.id === currentUser?.gymId) ?? null;
@@ -579,10 +629,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const signIn = useCallback<Ctx["signIn"]>((email, password) => {
     let result: { ok: boolean; error?: string; user?: User } = { ok: false, error: "Invalid email or password" };
     setState((s) => {
-      const user = s.users.find((u) => u.email.toLowerCase() === email.trim().toLowerCase() && u.password === password);
+      const user = s.users.find((u) => u.email.toLowerCase() === email.trim().toLowerCase() && u.password === hashPassword(password));
       if (!user) return s;
       // Mandatory reset for anyone still on the default password or flagged by an owner.
-      const mustReset = user.password === DEFAULT_PASSWORD || user.mustResetPassword === true;
+      const mustReset = user.password === hashPassword(DEFAULT_PASSWORD) || user.mustResetPassword === true;
       result = { ok: true, user: { ...user, mustResetPassword: mustReset } };
       return {
         ...s,
@@ -605,7 +655,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const gymId = `gym_${uid()}`;
       const ownerId = `u_${uid()}`;
       const gym: Gym = { id: gymId, name: v.gymName, slug: v.slug, code: normalizeGymCode(v.slug.slice(0, 5) + "24"), ownerId, plan: "Starter", mrr: 0, pricing: { ...DEFAULT_PRICING }, ownerPhone: v.phone ?? "", timings: v.timings ?? "6:00 AM – 10:00 PM", address: v.address ?? "" };
-      const owner: User = { id: ownerId, name: v.ownerName, email: v.email, phone: v.phone, password: v.password, role: "gym_owner", gymId, ownerCreated: false, mustResetPassword: false, joinedAt: iso(new Date()) };
+      const owner: User = { id: ownerId, name: v.ownerName, email: v.email, phone: v.phone, password: hashPassword(v.password), role: "gym_owner", gymId, ownerCreated: false, mustResetPassword: false, joinedAt: iso(new Date()) };
       return { ...s, gyms: [...s.gyms, gym], users: [...s.users, owner], currentUserId: ownerId };
     });
     return res;
@@ -628,7 +678,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const trainer = s.users.find((u) => u.role === "trainer" && u.gymId === gym.id);
       // New sign-ups are never auto-activated — payment decides the status.
       const member: User = {
-        id, name: v.name.trim(), email: v.email.trim(), phone: v.phone, password: v.password, role: "member", gymId: gym.id,
+        id, name: v.name.trim(), email: v.email.trim(), phone: v.phone, password: hashPassword(v.password), role: "member", gymId: gym.id,
         ownerCreated: false, mustResetPassword: false, trainerId: trainer?.id, joinedAt: iso(new Date()), streak: 0, attendanceToday: false,
         status: "pending_approval", paymentStatus: "unpaid", paymentMethod: v.paymentMethod, requestedMonths: v.months,
       };
@@ -695,7 +745,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }
         const trainer = s.users.find((u) => u.role === "trainer" && u.gymId === actor.gymId);
         const member: User = {
-          id: `u_${uid()}`, name: v.name, email: v.email, phone: v.phone, password: DEFAULT_PASSWORD, role: "member",
+          id: `u_${uid()}`, name: v.name, email: v.email, phone: v.phone, password: hashPassword(DEFAULT_PASSWORD), role: "member",
           gymId: actor.gymId, ownerCreated: true, mustResetPassword: true, trainerId: trainer?.id, joinedAt: iso(new Date()),
           streak: 0, attendanceToday: false, status: "active", paymentStatus: "paid",
         };
@@ -716,7 +766,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         res = { ok: false, error: "An account with that email already exists" };
         return s;
       }
-      const trainer: User = { id: `u_${uid()}`, name: v.name, email: v.email, password: v.password, role: "trainer", gymId: actor.gymId, ownerCreated: false, mustResetPassword: false, joinedAt: iso(new Date()) };
+      const trainer: User = { id: `u_${uid()}`, name: v.name, email: v.email, password: hashPassword(v.password), role: "trainer", gymId: actor.gymId, ownerCreated: false, mustResetPassword: false, joinedAt: iso(new Date()) };
       return { ...s, users: [...s.users, trainer] };
     });
     return res;
@@ -725,7 +775,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const resetPassword = useCallback((password: string) => {
     setState((s) => ({
       ...s,
-      users: s.users.map((u) => (u.id === s.currentUserId ? { ...u, password, mustResetPassword: false } : u)),
+      users: s.users.map((u) => (u.id === s.currentUserId ? { ...u, password: hashPassword(password), mustResetPassword: false } : u)),
     }));
   }, []);
 

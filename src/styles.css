@@ -154,9 +154,10 @@
    * feature markup is forced onto an opaque zinc surface. This prevents cards,
    * sheets, badges and fixed overlays from compositing against moving content.
    */
-  :where([class*="bg-"][class*="/"]) {
+  :where([class*="bg-"][class*="/"]):not(button):not(a):not([role="button"]) {
     background-color: var(--secondary) !important;
   }
+
 }
 
 @utility glass {
