@@ -294,8 +294,17 @@ function MemberPortal() {
 }
 
 function Quick({ icon, label, href }: { icon: React.ReactNode; label: string; href: string }) {
+  const isWa = label.includes("WhatsApp");
   return (
-    <Button asChild variant="outline" className="h-11 w-full border-border/70 bg-secondary text-xs">
+    <Button
+      asChild
+      variant={isWa ? undefined : "outline"}
+      className={`h-11 w-full gap-2 text-xs ${
+        isWa
+          ? "bg-emerald-500 text-zinc-950 shadow-none hover:bg-emerald-400"
+          : "border-zinc-700 bg-zinc-900 text-foreground shadow-none hover:bg-zinc-800"
+      }`}
+    >
       <a href={href} target="_blank" rel="noreferrer">
         {icon} {label}
       </a>
