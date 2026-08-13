@@ -98,12 +98,12 @@ function OwnerLeads() {
                   <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusStyles[l.status]}`}>
                     {l.status}
                   </span>
-                  <Button asChild size="sm" variant="outline" className="border-border/70 bg-secondary">
+                  <Button asChild size="sm" variant="outline" className="border-zinc-700 bg-zinc-900 shadow-none hover:bg-zinc-800">
                     <a href={telHref(l.phone)}>
                       <Phone className="size-4" />
                     </a>
                   </Button>
-                  <Button asChild size="sm">
+                  <Button asChild size="sm" className="bg-emerald-500 text-zinc-950 shadow-none hover:bg-emerald-400">
                     <a
                       href={waHref(
                         l.phone,

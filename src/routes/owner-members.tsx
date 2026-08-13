@@ -88,12 +88,12 @@ function OwnerMembers() {
                     >
                       {active ? "active" : "pending"}
                     </span>
-                    <Button asChild size="sm" variant="outline" className="border-border/70 bg-secondary">
+                    <Button asChild size="sm" variant="outline" className="border-zinc-700 bg-zinc-900 shadow-none hover:bg-zinc-800">
                       <a href={telHref(m.phone)}>
                         <Phone className="size-4" />
                       </a>
                     </Button>
-                    <Button asChild size="sm" variant="outline" className="border-border/70 bg-secondary">
+                    <Button asChild size="sm" className="bg-emerald-500 text-zinc-950 shadow-none hover:bg-emerald-400">
                       <a href={waHref(m.phone, `Hi ${m.name}, this is your gym.`)} target="_blank" rel="noreferrer">
                         <MessageCircle className="size-4" />
                       </a>
