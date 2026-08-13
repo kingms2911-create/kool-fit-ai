@@ -555,14 +555,46 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<State>(seed);
   const [hydrated, setHydrated] = useState(false);
 
+  // 1) instant local cache, 2) authoritative cloud data (survives rebuilds)
   useEffect(() => {
+    let cancelled = false;
     try {
       const raw = localStorage.getItem(KEY) ?? localStorage.getItem(LEGACY_KEY);
       if (raw) setState(migrate(JSON.parse(raw) as State));
     } catch {
       /* ignore */
     }
-    setHydrated(true);
+
+    void (async () => {
+      const cloud = await loadCloudSnapshot();
+      if (cancelled) return;
+      if (cloud) {
+        setState((s) =>
+          migrate({
+            ...s,
+            users: cloud.users as unknown as User[],
+            gyms: cloud.gyms as unknown as Gym[],
+            requests: cloud.requests as unknown as PlanRequest[],
+            leads: cloud.leads as unknown as Lead[],
+            checkins: cloud.checkins as unknown as CheckIn[],
+            notifications: cloud.notifications as unknown as AppNotification[],
+            healthIssues: cloud.healthIssues as unknown as HealthIssue[],
+            products: cloud.products as unknown as Product[],
+            workoutChecklist: cloud.workoutChecklist.length
+              ? (cloud.workoutChecklist as unknown as ChecklistItem[])
+              : s.workoutChecklist,
+            dietChecklist: cloud.dietChecklist.length
+              ? (cloud.dietChecklist as unknown as ChecklistItem[])
+              : s.dietChecklist,
+          }),
+        );
+      }
+      setHydrated(true);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -573,7 +605,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       /* ignore */
     }
 
+    const t = setTimeout(() => {
+      void saveCloudSnapshot({
+        users: state.users as unknown as Record<string, unknown>[],
+        gyms: state.gyms as unknown as Record<string, unknown>[],
+        requests: state.requests as unknown as Record<string, unknown>[],
+        leads: state.leads as unknown as Record<string, unknown>[],
+        checkins: state.checkins as unknown as Record<string, unknown>[],
+        notifications: state.notifications as unknown as Record<string, unknown>[],
+        healthIssues: state.healthIssues as unknown as Record<string, unknown>[],
+        products: state.products as unknown as Record<string, unknown>[],
+        workoutChecklist: state.workoutChecklist as unknown as Record<string, unknown>[],
+        dietChecklist: state.dietChecklist as unknown as Record<string, unknown>[],
+      });
+    }, 700);
+    return () => clearTimeout(t);
   }, [state, hydrated]);
+
 
   const currentUser = state.users.find((u) => u.id === state.currentUserId) ?? null;
   const currentGym = state.gyms.find((g) => g.id === currentUser?.gymId) ?? null;
