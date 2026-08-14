@@ -90,8 +90,11 @@ export function PlanEditorModal({
             </Button>
           </div>
         </section>
+        ) : null}
 
+        {only !== "workout" ? (
         <section className="mt-6">
+
           <div className="flex items-center gap-2">
             <Utensils className="size-4 text-primary" />
             <h3 className="text-sm font-semibold">Diet — time, meal & quantity, macros</h3>
