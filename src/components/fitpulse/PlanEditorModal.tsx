@@ -134,9 +134,11 @@ export function PlanEditorModal({
             </Button>
           </div>
         </section>
+        ) : null}
 
         <div className="mt-6 flex flex-wrap gap-3">
           <Button onClick={() => onSave({ workout: w, diet: d })}>Save plan</Button>
+
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
