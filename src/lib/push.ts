@@ -52,7 +52,7 @@ export async function enablePush(): Promise<PushStatus> {
 export function pushNotify(title: string, body: string): void {
   if (!pushSupported() || Notification.permission !== "granted") return;
   try {
-    new Notification(title, { body, icon: "/favicon.ico" });
+    new Notification(title, { body, icon: "/icon-192.png" });
   } catch {
     /* ignore */
   }
