@@ -43,7 +43,7 @@ function OwnerPlans() {
   const [note, setNote] = useState("");
   const [saved, setSaved] = useState("");
   const [override, setOverride] = useState<{ workout: PlanExercise[]; diet: PlanMeal[] } | null>(null);
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState<"workout" | "diet" | null>(null);
 
   const generated = useMemo(() => buildPlan(prefs), [prefs]);
   const plan = override ?? generated;
