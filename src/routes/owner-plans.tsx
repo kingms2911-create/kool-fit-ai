@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Sparkles, Wand2 } from "lucide-react";
+import { Sparkles, Wand2, Dumbbell, Salad } from "lucide-react";
 import { AppShell, GlassCard } from "@/components/fitpulse/AppShell";
 import { OwnerTabs } from "@/components/fitpulse/Tabs";
 import { PlanEditorModal } from "@/components/fitpulse/PlanEditorModal";
