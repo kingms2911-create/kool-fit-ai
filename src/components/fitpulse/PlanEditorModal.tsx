@@ -13,12 +13,14 @@ export function PlanEditorModal({
   title,
   workout,
   diet,
+  only,
   onClose,
   onSave,
 }: {
   title: string;
   workout: PlanExercise[];
   diet: PlanMeal[];
+  only?: "workout" | "diet";
   onClose: () => void;
   onSave: (plan: { workout: PlanExercise[]; diet: PlanMeal[] }) => void;
 }) {
@@ -35,13 +37,18 @@ export function PlanEditorModal({
       <div className="max-h-[88vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-900 p-6 pb-24">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-xl font-semibold">Edit plan</h2>
+            <h2 className="text-xl font-semibold">
+              {only === "workout" ? "Edit workout plan" : only === "diet" ? "Edit diet plan" : "Edit plan"}
+            </h2>
             <p className="mt-0.5 text-sm text-muted-foreground">{title}</p>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose}>
             <X className="size-4" />
           </Button>
         </div>
+
+        {only !== "diet" ? (
+
 
         <section className="mt-6">
           <div className="flex items-center gap-2">
