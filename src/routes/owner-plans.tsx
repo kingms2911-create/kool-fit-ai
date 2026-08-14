@@ -307,13 +307,15 @@ function OwnerPlans() {
           title={goalLabel}
           workout={plan.workout}
           diet={plan.diet}
-          onClose={() => setEditing(false)}
+          only={editing}
+          onClose={() => setEditing(null)}
           onSave={(p) => {
             setOverride(p);
-            setEditing(false);
+            setEditing(null);
           }}
         />
       ) : null}
+
     </AppShell>
   );
 }
