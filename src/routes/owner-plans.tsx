@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Sparkles, Wand2 } from "lucide-react";
+import { Sparkles, Wand2, Dumbbell, Salad } from "lucide-react";
 import { AppShell, GlassCard } from "@/components/fitpulse/AppShell";
 import { OwnerTabs } from "@/components/fitpulse/Tabs";
 import { PlanEditorModal } from "@/components/fitpulse/PlanEditorModal";
@@ -43,7 +43,7 @@ function OwnerPlans() {
   const [note, setNote] = useState("");
   const [saved, setSaved] = useState("");
   const [override, setOverride] = useState<{ workout: PlanExercise[]; diet: PlanMeal[] } | null>(null);
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState<"workout" | "diet" | null>(null);
 
   const generated = useMemo(() => buildPlan(prefs), [prefs]);
   const plan = override ?? generated;
@@ -164,8 +164,64 @@ function OwnerPlans() {
           </div>
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-3">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-3">
+            <p className="text-sm font-semibold">Workout plan</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Assigns only the workout — the member&apos;s existing diet plan stays untouched.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button
+                disabled={!memberId}
+                onClick={() => {
+                  const member = members.find((m) => m.id === memberId);
+                  assignPlan(memberId, {
+                    goal: note.trim() ? `${goalLabel} · ${note.trim()}` : goalLabel,
+                    workout: plan.workout,
+                    diet: [],
+                  });
+                  setSaved(`Workout plan assigned to ${member?.name ?? "member"}.`);
+                }}
+              >
+                <Dumbbell className="size-4" /> Generate & assign workout
+              </Button>
+              <Button variant="outline" className="border-border/70 bg-secondary" onClick={() => setEditing("workout")}>
+                Edit workout
+              </Button>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-3">
+            <p className="text-sm font-semibold">Diet plan</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Assigns only the diet — the member&apos;s existing workout plan stays untouched.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button
+                disabled={!memberId}
+                onClick={() => {
+                  const member = members.find((m) => m.id === memberId);
+                  assignPlan(memberId, {
+                    goal: note.trim() ? `${goalLabel} · ${note.trim()}` : goalLabel,
+                    workout: [],
+                    diet: plan.diet,
+                  });
+                  setSaved(`Diet plan assigned to ${member?.name ?? "member"}.`);
+                }}
+              >
+                <Salad className="size-4" /> Generate & assign diet
+              </Button>
+              <Button variant="outline" className="border-border/70 bg-secondary" onClick={() => setEditing("diet")}>
+                Edit diet
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-3">
           <Button
+            variant="outline"
+            className="border-border/70 bg-secondary"
             disabled={!memberId}
             onClick={() => {
               const member = members.find((m) => m.id === memberId);
@@ -174,13 +230,10 @@ function OwnerPlans() {
                 workout: plan.workout,
                 diet: plan.diet,
               });
-              setSaved(`Plan assigned to ${member?.name ?? "member"}.`);
+              setSaved(`Workout + diet plan assigned to ${member?.name ?? "member"}.`);
             }}
           >
-            <Wand2 className="size-4" /> Generate & assign plan
-          </Button>
-          <Button variant="outline" className="border-border/70 bg-secondary" onClick={() => setEditing(true)}>
-            Edit plan
+            <Wand2 className="size-4" /> Assign both together
           </Button>
           {override ? (
             <Button variant="ghost" onClick={() => setOverride(null)}>
@@ -189,6 +242,7 @@ function OwnerPlans() {
           ) : null}
         </div>
         {saved ? <p className="mt-3 text-sm text-primary">{saved}</p> : null}
+
       </GlassCard>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
@@ -253,13 +307,15 @@ function OwnerPlans() {
           title={goalLabel}
           workout={plan.workout}
           diet={plan.diet}
-          onClose={() => setEditing(false)}
+          only={editing}
+          onClose={() => setEditing(null)}
           onSave={(p) => {
             setOverride(p);
-            setEditing(false);
+            setEditing(null);
           }}
         />
       ) : null}
+
     </AppShell>
   );
 }

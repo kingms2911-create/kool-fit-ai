@@ -951,9 +951,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       pushNote(
         {
           ...s,
-          users: s.users.map((u) =>
-            u.id === memberId ? { ...u, assignedPlan: { ...plan, assignedAt: iso(new Date()) } } : u,
-          ),
+          users: s.users.map((u) => {
+            if (u.id !== memberId) return u;
+            const prev = u.assignedPlan;
+            // Empty arrays mean "leave this part of the plan untouched" so
+            // workout and diet plans can be generated/assigned independently.
+            const workout = plan.workout.length ? plan.workout : (prev?.workout ?? []);
+            const diet = plan.diet.length ? plan.diet : (prev?.diet ?? []);
+            return {
+              ...u,
+              assignedPlan: { goal: plan.goal, workout, diet, assignedAt: iso(new Date()) },
+            };
+          }),
         },
         [memberId],
         "New Plan Assigned",
@@ -961,6 +970,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       ),
     );
   }, []);
+
 
   const addLead = useCallback<Ctx["addLead"]>((v) => {
     setState((s) => {
