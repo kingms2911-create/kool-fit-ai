@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 
 import { buildPlan } from "./diet-engine";
 import { hashPassword } from "./hash";
-import { loadCloudSnapshot, saveCloudSnapshot } from "./cloud-sync";
+import { clearSession, cloudSignIn, loadCloudSnapshot, saveCloudSnapshot } from "./cloud-sync";
 
 export type Role = "super_admin" | "gym_owner" | "trainer" | "member";
 
@@ -432,9 +432,9 @@ type Ctx = {
   state: State;
   currentUser: User | null;
   currentGym: Gym | null;
-  signIn: (email: string, password: string) => { ok: boolean; error?: string; user?: User };
+  signIn: (email: string, password: string) => Promise<{ ok: boolean; error?: string; user?: User }>;
   signOut: () => void;
-  registerGym: (v: { gymName: string; slug: string; ownerName: string; email: string; password: string; phone?: string; timings?: string; address?: string }) => { ok: boolean; error?: string };
+  registerGym: (v: { gymName: string; slug: string; ownerName: string; email: string; password: string; phone?: string; timings?: string; address?: string }) => Promise<{ ok: boolean; error?: string }>;
   joinAsMember: (v: {
     code: string;
     name: string;
@@ -443,7 +443,7 @@ type Ctx = {
     password: string;
     paymentMethod: PaymentMethod;
     months: 1 | 2 | 3;
-  }) => { ok: boolean; error?: string; userId?: string };
+  }) => Promise<{ ok: boolean; error?: string; userId?: string }>;
   confirmOnlinePayment: (memberId: string, months: 1 | 2 | 3) => { ok: boolean; error?: string };
   approveMemberPayment: (memberId: string) => { ok: boolean; error?: string };
   createMember: (v: { name: string; email: string; phone: string }) => { ok: boolean; error?: string };
@@ -555,7 +555,30 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<State>(seed);
   const [hydrated, setHydrated] = useState(false);
 
-  // 1) instant local cache, 2) authoritative cloud data (survives rebuilds)
+  /** Merge an authenticated cloud snapshot into local state. */
+  const applyCloud = useCallback((cloud: NonNullable<Awaited<ReturnType<typeof loadCloudSnapshot>>>) => {
+    setState((s) =>
+      migrate({
+        ...s,
+        users: cloud.users as unknown as User[],
+        gyms: cloud.gyms as unknown as Gym[],
+        requests: cloud.requests as unknown as PlanRequest[],
+        leads: cloud.leads as unknown as Lead[],
+        checkins: cloud.checkins as unknown as CheckIn[],
+        notifications: cloud.notifications as unknown as AppNotification[],
+        healthIssues: cloud.healthIssues as unknown as HealthIssue[],
+        products: cloud.products as unknown as Product[],
+        workoutChecklist: cloud.workoutChecklist.length
+          ? (cloud.workoutChecklist as unknown as ChecklistItem[])
+          : s.workoutChecklist,
+        dietChecklist: cloud.dietChecklist.length
+          ? (cloud.dietChecklist as unknown as ChecklistItem[])
+          : s.dietChecklist,
+      }),
+    );
+  }, []);
+
+  // 1) instant local cache, 2) authoritative cloud data for a signed-in session
   useEffect(() => {
     let cancelled = false;
     try {
@@ -568,34 +591,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     void (async () => {
       const cloud = await loadCloudSnapshot();
       if (cancelled) return;
-      if (cloud) {
-        setState((s) =>
-          migrate({
-            ...s,
-            users: cloud.users as unknown as User[],
-            gyms: cloud.gyms as unknown as Gym[],
-            requests: cloud.requests as unknown as PlanRequest[],
-            leads: cloud.leads as unknown as Lead[],
-            checkins: cloud.checkins as unknown as CheckIn[],
-            notifications: cloud.notifications as unknown as AppNotification[],
-            healthIssues: cloud.healthIssues as unknown as HealthIssue[],
-            products: cloud.products as unknown as Product[],
-            workoutChecklist: cloud.workoutChecklist.length
-              ? (cloud.workoutChecklist as unknown as ChecklistItem[])
-              : s.workoutChecklist,
-            dietChecklist: cloud.dietChecklist.length
-              ? (cloud.dietChecklist as unknown as ChecklistItem[])
-              : s.dietChecklist,
-          }),
-        );
-      }
+      if (cloud) applyCloud(cloud);
       setHydrated(true);
     })();
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [applyCloud]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -626,43 +629,70 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const currentUser = state.users.find((u) => u.id === state.currentUserId) ?? null;
   const currentGym = state.gyms.find((g) => g.id === currentUser?.gymId) ?? null;
 
-  const signIn = useCallback<Ctx["signIn"]>((email, password) => {
-    let result: { ok: boolean; error?: string; user?: User } = { ok: false, error: "Invalid email or password" };
-    setState((s) => {
-      const user = s.users.find((u) => u.email.toLowerCase() === email.trim().toLowerCase() && u.password === hashPassword(password));
-      if (!user) return s;
-      // Mandatory reset for anyone still on the default password or flagged by an owner.
-      const mustReset = user.password === hashPassword(DEFAULT_PASSWORD) || user.mustResetPassword === true;
-      result = { ok: true, user: { ...user, mustResetPassword: mustReset } };
-      return {
-        ...s,
-        currentUserId: user.id,
-        users: s.users.map((u) => (u.id === user.id ? { ...u, mustResetPassword: mustReset } : u)),
-      };
-    });
-    return result;
+  /** Credentials are always verified on the server; the browser never sees other accounts' hashes. */
+  const signIn = useCallback<Ctx["signIn"]>(
+    async (email, password) => {
+      const hash = hashPassword(password);
+      const auth = await cloudSignIn({ email: email.trim(), passwordHash: hash });
+      if (!auth.ok || !auth.userId) return { ok: false, error: auth.error ?? "Invalid email or password" };
+
+      const cloud = await loadCloudSnapshot();
+      if (cloud) applyCloud(cloud);
+
+      const mustReset = hash === hashPassword(DEFAULT_PASSWORD) || auth.mustReset === true;
+      let user: User | undefined;
+      setState((s) => {
+        const found = s.users.find((u) => u.id === auth.userId);
+        if (found) user = { ...found, mustResetPassword: mustReset };
+        return {
+          ...s,
+          currentUserId: auth.userId ?? null,
+          users: s.users.map((u) => (u.id === auth.userId ? { ...u, mustResetPassword: mustReset } : u)),
+        };
+      });
+      // state updates are async — resolve the user from the freshly loaded snapshot too
+      const fromCloud = (cloud?.users as unknown as User[] | undefined)?.find((u) => u.id === auth.userId);
+      const resolved = user ?? (fromCloud ? { ...fromCloud, mustResetPassword: mustReset } : undefined);
+      if (!resolved) return { ok: false, error: "Account data unavailable, please try again" };
+      return { ok: true, user: resolved };
+    },
+    [applyCloud],
+  );
+
+  const signOut = useCallback(() => {
+    clearSession();
+    setState((s) => ({ ...s, currentUserId: null }));
   }, []);
 
-  const signOut = useCallback(() => setState((s) => ({ ...s, currentUserId: null })), []);
+  const registerGym = useCallback<Ctx["registerGym"]>(async (v) => {
+    const gymId = `gym_${uid()}`;
+    const ownerId = `u_${uid()}`;
+    const hash = hashPassword(v.password);
+    const auth = await cloudSignIn({ email: v.email.trim(), passwordHash: hash, allowCreate: true, userId: ownerId });
+    if (!auth.ok) return { ok: false, error: auth.error ?? "An account with that email already exists" };
+    const id = auth.userId ?? ownerId;
 
-  const registerGym = useCallback<Ctx["registerGym"]>((v) => {
     let res: { ok: boolean; error?: string } = { ok: true };
     setState((s) => {
       if (s.users.some((u) => u.email.toLowerCase() === v.email.toLowerCase())) {
         res = { ok: false, error: "An account with that email already exists" };
         return s;
       }
-      const gymId = `gym_${uid()}`;
-      const ownerId = `u_${uid()}`;
-      const gym: Gym = { id: gymId, name: v.gymName, slug: v.slug, code: normalizeGymCode(v.slug.slice(0, 5) + "24"), ownerId, plan: "Starter", mrr: 0, pricing: { ...DEFAULT_PRICING }, ownerPhone: v.phone ?? "", timings: v.timings ?? "6:00 AM – 10:00 PM", address: v.address ?? "" };
-      const owner: User = { id: ownerId, name: v.ownerName, email: v.email, phone: v.phone, password: hashPassword(v.password), role: "gym_owner", gymId, ownerCreated: false, mustResetPassword: false, joinedAt: iso(new Date()) };
-      return { ...s, gyms: [...s.gyms, gym], users: [...s.users, owner], currentUserId: ownerId };
+      const gym: Gym = { id: gymId, name: v.gymName, slug: v.slug, code: normalizeGymCode(v.slug.slice(0, 5) + "24"), ownerId: id, plan: "Starter", mrr: 0, pricing: { ...DEFAULT_PRICING }, ownerPhone: v.phone ?? "", timings: v.timings ?? "6:00 AM – 10:00 PM", address: v.address ?? "" };
+      const owner: User = { id, name: v.ownerName, email: v.email, phone: v.phone, password: hash, role: "gym_owner", gymId, ownerCreated: false, mustResetPassword: false, joinedAt: iso(new Date()) };
+      return { ...s, gyms: [...s.gyms, gym], users: [...s.users, owner], currentUserId: id };
     });
     return res;
   }, []);
 
-  const joinAsMember = useCallback<Ctx["joinAsMember"]>((v) => {
-    let res: { ok: boolean; error?: string; userId?: string } = { ok: true };
+  const joinAsMember = useCallback<Ctx["joinAsMember"]>(async (v) => {
+    const newId = `u_${uid()}`;
+    const hash = hashPassword(v.password);
+    const auth = await cloudSignIn({ email: v.email.trim(), passwordHash: hash, allowCreate: true, userId: newId });
+    if (!auth.ok) return { ok: false, error: auth.error ?? "An account with that email already exists" };
+    const id = auth.userId ?? newId;
+
+    let res: { ok: boolean; error?: string; userId?: string } = { ok: true, userId: id };
     setState((s) => {
       const code = normalizeGymCode(v.code);
       const gym = s.gyms.find((g) => normalizeGymCode(g.code) === code);
@@ -670,23 +700,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         res = { ok: false, error: "No gym found for that code" };
         return s;
       }
-      if (s.users.some((u) => u.email.trim().toLowerCase() === v.email.trim().toLowerCase())) {
+      if (s.users.some((u) => u.id !== id && u.email.trim().toLowerCase() === v.email.trim().toLowerCase())) {
         res = { ok: false, error: "An account with that email already exists" };
         return s;
       }
-      const id = `u_${uid()}`;
       const trainer = s.users.find((u) => u.role === "trainer" && u.gymId === gym.id);
       // New sign-ups are never auto-activated — payment decides the status.
       const member: User = {
-        id, name: v.name.trim(), email: v.email.trim(), phone: v.phone, password: hashPassword(v.password), role: "member", gymId: gym.id,
+        id, name: v.name.trim(), email: v.email.trim(), phone: v.phone, password: hash, role: "member", gymId: gym.id,
         ownerCreated: false, mustResetPassword: false, trainerId: trainer?.id, joinedAt: iso(new Date()), streak: 0, attendanceToday: false,
         status: "pending_approval", paymentStatus: "unpaid", paymentMethod: v.paymentMethod, requestedMonths: v.months,
       };
-      res = { ok: true, userId: id };
-      return { ...s, users: [...s.users, member], currentUserId: id };
+      return { ...s, users: [...s.users.filter((u) => u.id !== id), member], currentUserId: id };
     });
     return res;
   }, []);
+
+
 
   /** Grant an active membership after a verified payment (online or at the desk). */
   const activate = useCallback((memberId: string, months: 1 | 2 | 3 | undefined) => {

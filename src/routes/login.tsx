@@ -36,8 +36,8 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const attempt = (mail: string, pass: string) => {
-    const res = signIn(mail, pass);
+  const attempt = async (mail: string, pass: string) => {
+    const res = await signIn(mail, pass);
     if (!res.ok || !res.user) return setError(res.error ?? "Unable to sign in");
     setError("");
     void navigate({ to: roleHome[res.user.role] });
@@ -62,7 +62,7 @@ function LoginPage() {
           className="glass rounded-3xl p-6"
           onSubmit={(e) => {
             e.preventDefault();
-            attempt(email, password);
+            void attempt(email, password);
           }}
         >
           <div className="space-y-4">
