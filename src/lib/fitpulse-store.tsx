@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 
 import { buildPlan } from "./diet-engine";
 import { hashPassword } from "./hash";
-import { loadCloudSnapshot, saveCloudSnapshot } from "./cloud-sync";
+import { clearSession, cloudSignIn, loadCloudSnapshot, saveCloudSnapshot } from "./cloud-sync";
 
 export type Role = "super_admin" | "gym_owner" | "trainer" | "member";
 
@@ -432,9 +432,9 @@ type Ctx = {
   state: State;
   currentUser: User | null;
   currentGym: Gym | null;
-  signIn: (email: string, password: string) => { ok: boolean; error?: string; user?: User };
+  signIn: (email: string, password: string) => Promise<{ ok: boolean; error?: string; user?: User }>;
   signOut: () => void;
-  registerGym: (v: { gymName: string; slug: string; ownerName: string; email: string; password: string; phone?: string; timings?: string; address?: string }) => { ok: boolean; error?: string };
+  registerGym: (v: { gymName: string; slug: string; ownerName: string; email: string; password: string; phone?: string; timings?: string; address?: string }) => Promise<{ ok: boolean; error?: string }>;
   joinAsMember: (v: {
     code: string;
     name: string;
@@ -443,7 +443,7 @@ type Ctx = {
     password: string;
     paymentMethod: PaymentMethod;
     months: 1 | 2 | 3;
-  }) => { ok: boolean; error?: string; userId?: string };
+  }) => Promise<{ ok: boolean; error?: string; userId?: string }>;
   confirmOnlinePayment: (memberId: string, months: 1 | 2 | 3) => { ok: boolean; error?: string };
   approveMemberPayment: (memberId: string) => { ok: boolean; error?: string };
   createMember: (v: { name: string; email: string; phone: string }) => { ok: boolean; error?: string };
