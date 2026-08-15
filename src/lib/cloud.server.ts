@@ -68,8 +68,8 @@ async function admin() {
 export async function authenticate(input: {
   email: string;
   passwordHash: string;
-  allowCreate?: boolean;
-  userId?: string;
+  allowCreate?: boolean | undefined;
+  userId?: string | undefined;
 }): Promise<{ ok: boolean; error?: string; token?: string; userId?: string; mustReset?: boolean }> {
   const db = await admin();
   const email = input.email.trim().toLowerCase();
