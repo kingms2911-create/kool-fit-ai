@@ -96,9 +96,11 @@ function SignupPage() {
             onSubmit={(e) => {
               e.preventDefault();
               if (form.password.length < 8) return setError("Password must be at least 8 characters");
-              const res = registerGym(form);
-              if (!res.ok) return setError(res.error ?? "Could not create gym");
-              void navigate({ to: "/gym-owner" });
+              void (async () => {
+                const res = await registerGym(form);
+                if (!res.ok) return setError(res.error ?? "Could not create gym");
+                void navigate({ to: "/gym-owner" });
+              })();
             }}
           >
             <div className="space-y-2">

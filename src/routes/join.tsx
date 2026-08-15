@@ -66,7 +66,7 @@ function JoinMember() {
     if (busy || !validate()) return;
     setBusy(method);
 
-    const res = joinAsMember({ ...form, paymentMethod: method, months });
+    const res = await joinAsMember({ ...form, paymentMethod: method, months });
     if (!res.ok || !res.userId) {
       setBusy(null);
       return setError(res.error ?? "Could not join gym");
