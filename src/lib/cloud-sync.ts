@@ -49,9 +49,9 @@ export function clearSession() {
 export async function cloudSignIn(v: {
   email: string;
   passwordHash: string;
-  allowCreate?: boolean;
-  userId?: string;
-}): Promise<{ ok: boolean; error?: string; userId?: string; mustReset?: boolean }> {
+  allowCreate?: boolean | undefined;
+  userId?: string | undefined;
+}): Promise<{ ok: boolean; error?: string | undefined; userId?: string; mustReset?: boolean }> {
   try {
     const res = await cloudAuthenticate({
       data: {
